@@ -838,6 +838,24 @@ async function analyzeAll() {
         }
         html += `</ul>`;
 
+              // بخش جدید برای نمایش جزئیات صاعقه
+        html += `<h4>⚡ صاعقه</h4>`;
+        html += `<ul>`;
+        if (climate) {
+            const annualPrecip = climate.precip ? climate.precip.annualAvg.toFixed(1) : 'نامشخص';
+            html += `<li>میانگین بارش سالانه: ${annualPrecip} mm</li>`;
+            
+            if (climate.cape) {
+                html += `<li>انرژی همرفتی (CAPE): ${climate.cape.annualAvg.toFixed(0)} J/kg</li>`;
+            } else {
+                html += `<li>انرژی همرفتی (CAPE): دریافت نشد</li>`;
+            }
+        } else {
+            html += `<li>داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
+        }
+        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
+        html += `</ul>`;
+
         document.getElementById('paramDetails').innerHTML = html;
 
                 generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
