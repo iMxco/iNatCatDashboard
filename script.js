@@ -818,11 +818,25 @@ async function analyzeAll() {
                     <li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li>
                  </ul>`;
 
-        html += `<h4>📉 فرونشست زمین</h4><ul><li>${subsidenceText}</li></ul>`;
+              html += `<h4>📉 فرونشست زمین</h4>`;
+        html += `<ul><li>${subsidenceText}</li></ul>`;
 
-              if (climate) html += `<h4>🌡️ دما و طوفان</h4><ul><li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li><li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li></ul>`;
+        html += `<h4>⚡ صاعقه</h4>`;
+        html += `<ul>`;
+        if (climate) {
+            html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
+            if (climate.cape) html += `<li>انرژی همرفتی (CAPE): ${climate.cape.annualAvg.toFixed(0)} J/kg</li>`;
+            html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
+        }
+        html += `</ul>`;
 
-        html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
+        html += `<h4>🌪️ طوفان و 🌡️ دما</h4>`;
+        html += `<ul>`;
+        if (climate) {
+            html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li>`;
+            html += `<li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`;
+        }
+        html += `</ul>`;
 
         document.getElementById('paramDetails').innerHTML = html;
 
