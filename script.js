@@ -572,18 +572,19 @@ async function analyzeAll() {
     const token = getToken();
 
     try {
-        const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData] = await Promise.all([
-            getElevation(lat, lon),
-            estimateSlope(lat, lon),
-            getClimateData(lat, lon),
-            getPrecipitation(lat, lon),
-            getFloodDischarge(lat, lon),
-            getNDVI(lat, lon, token),
-            getLandCover(lat, lon, token),
-            getRiverDistance(lat, lon),
-            getEarthquakeData(lat, lon),
-            getSubsidenceData(lat, lon)
-        ]);
+        const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData] = await Promise.all([
+    getElevation(lat, lon),
+    estimateSlope(lat, lon),
+    getClimateData(lat, lon),
+    getPrecipitation(lat, lon),
+    getFloodDischarge(lat, lon),
+    getNDVI(lat, lon, token),
+    getLandCover(lat, lon, token),
+    getRiverDistance(lat, lon),
+    getEarthquakeData(lat, lon),
+    getSubsidenceData(lat, lon),
+    getAviationRisk(lat, lon)
+]);
 
         document.getElementById('loading').style.display = 'none';
         
