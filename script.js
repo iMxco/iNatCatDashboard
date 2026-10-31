@@ -215,27 +215,6 @@ async function getPrecipitation(lat, lon) {
 }
 
 async function getCapeData(lat, lon) {
-    const now = new Date();
-    const endYear = now.getFullYear() - 1;
-    const startYear = endYear - 19;
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&hourly=cape&timezone=auto`;
-    
-    try {
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (!data.hourly || !data.hourly.cape) return null;
-        
-        let total = 0, count = 0;
-        data.hourly.cape.forEach(val => {
-            if (val !== null && val !== undefined) {
-                total += val;
-                count++;
-            }
-        });
-        return count > 0 ? (total / count) : null;
-    } catch (e) { return null; }
-}
 
 async function getClimateData(lat, lon) {
     const now = new Date();
