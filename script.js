@@ -216,9 +216,9 @@ async function getPrecipitation(lat, lon) {
 }
 
 async function getClimateData(lat, lon) {
-    const now = new Date();
+        const now = new Date();
     const endYear = now.getFullYear() - 1;
-    const startYear = endYear - 9;
+    const startYear = endYear - 19;
     const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean&wind_speed_unit=kmh&timezone=auto`;
     
     try {
