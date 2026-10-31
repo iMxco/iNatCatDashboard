@@ -855,7 +855,34 @@ async function analyzeAll() {
         }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
         html += `</ul>`;
+        // --- شروع بخش جزئیات اقلیم (طوفان، دما، صاعقه) ---
+        html += `<h4>🌪️ طوفان و 🌡️ دما</h4>`;
+        html += `<ul>`;
+        if (climate) {
+            html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li>`;
+            html += `<li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`;
+        } else {
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های دما و باد در دسترس نیست.</li>`;
+        }
+        html += `</ul>`;
 
+        html += `<h4>⚡ صاعقه</h4>`;
+        html += `<ul>`;
+        if (climate) {
+            html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
+            if (climate.cape) {
+                html += `<li>انرژی همرفتی (CAPE): ${climate.cape.annualAvg.toFixed(0)} J/kg</li>`;
+            } else {
+                html += `<li>انرژی همرفتی (CAPE): دریافت نشد</li>`;
+            }
+        } else {
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
+        }
+        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
+        html += `</ul>`;
+        // --- پایان بخش جزئیات اقلیم ---
+
+        document.getElementById('paramDetails').innerHTML = html;
         document.getElementById('paramDetails').innerHTML = html;
 
                 generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
