@@ -215,11 +215,33 @@ async function getPrecipitation(lat, lon) {
     } catch (e) { return null; }
 }
 
+async function getCapeData(lat, lon) {
+    const now = new Date();
+    const endYear = now.getFullYear() - 1;
+    const startYear = endYear - 19;
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&hourly=cape&timezone=auto`;
+    
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!data.hourly || !data.hourly.cape) return null;
+        
+        let total = 0, count = 0;
+        data.hourly.cape.forEach(val => {
+            if (val !== null && val !== undefined) {
+                total += val;
+                count++;
+            }
+        });
+        return count > 0 ? (total / count) : null;
+    } catch (e) { return null; }
+}
 async function getClimateData(lat, lon) {
         const now = new Date();
     const endYear = now.getFullYear() - 1;
     const startYear = endYear - 19;
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean,cape&wind_speed_unit=kmh&timezone=auto`;
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean&wind_speed_unit=kmh&timezone=auto`;
     
     try {
         const res = await fetch(url);
@@ -628,7 +650,7 @@ async function analyzeAll() {
     const token = getToken();
 
     try {
-        const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData] = await Promise.all([
+                const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
     getElevation(lat, lon),
     estimateSlope(lat, lon),
     getClimateData(lat, lon),
@@ -640,7 +662,11 @@ async function analyzeAll() {
     getEarthquakeData(lat, lon),
     getSubsidenceData(lat, lon),
     getAviationRisk(lat, lon)
-]);
+                getSubsidenceData(lat, lon),
+            getAviationRisk(lat, lon),
+            getCapeData(lat, lon)
+        ]);               
+
 
         document.getElementById('loading').style.display = 'none';
         
@@ -701,17 +727,17 @@ async function analyzeAll() {
             subsidenceText = 'داده فرونشست در دسترس نیست (تخمین بر اساس منطقه).';
         }
 
-                let lScore = 1;
+                       let lScore = 1;
         if (climate) {
             if (climate.precip.annualAvg > 700) lScore = 3;
             else if (climate.precip.annualAvg > 300) lScore = 2;
 
-            if (climate.cape) {
-                const cape = climate.cape.annualAvg;
-                if (cape > 2000) lScore += 2;
-                else if (cape > 1000) lScore += 1;
+            // استفاده از متغیر capeData که از API ساعتی گرفته شد
+            if (capeData) {
+                if (capeData > 2000) lScore += 2;
+                else if (capeData > 1000) lScore += 1;
                 
-                if (cape > 1000 && climate.precip.annualAvg < 100) {
+                if (capeData > 1000 && climate.precip.annualAvg < 100) {
                     lScore -= 0.5; 
                 }
             }
@@ -845,8 +871,8 @@ async function analyzeAll() {
             const annualPrecip = climate.precip ? climate.precip.annualAvg.toFixed(1) : 'نامشخص';
             html += `<li>میانگین بارش سالانه: ${annualPrecip} mm</li>`;
             
-            if (climate.cape) {
-                html += `<li>انرژی همرفتی (CAPE): ${climate.cape.annualAvg.toFixed(0)} J/kg</li>`;
+                      if (capeData) {
+                html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
                 html += `<li>انرژی همرفتی (CAPE): دریافت نشد</li>`;
             }
