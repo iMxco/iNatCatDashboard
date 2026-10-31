@@ -10,6 +10,7 @@ let riverDataCache = null;
 let citiesSubsidenceCache = null;
 let hanoverSubsidenceCache = null;
 let airportsCache = null;
+let airwaysCache = null;
 
 // ============================================================
 // راه‌اندازی نقشه
@@ -483,6 +484,38 @@ async function loadAirports() {
     } catch (e) { return null; }
 }
 
+async function loadAirwaysData() {
+    if (airwaysCache) return airwaysCache;
+    try {
+        const res = await fetch('iran-airways.geojson');
+        if (!res.ok) return null;
+        airwaysCache = await res.json();
+        return airwaysCache;
+    } catch (e) { return null; }
+}
+
+async function getAirwayDistance(lat, lon) {
+    const airwaysData = await loadAirwaysData();
+    if (!airwaysData || !airwaysData.features) return null;
+
+    const pt = turf.point([lon, lat]);
+    let minD = Infinity;
+    let nearestAirway = null;
+
+    airwaysData.features.forEach(f => {
+        if (!f.geometry) return;
+        if (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString') {
+            try {
+                const d = turf.pointToLineDistance(pt, f, { units: 'kilometers' });
+                if (d < minD) { minD = d; nearestAirway = f.properties.name || 'دالان بدون نام'; }
+            } catch (e) {}
+        } 
+    });
+
+    if (nearestAirway === null) return null;
+    return { distance: minD, name: nearestAirway };
+}
+
 async function getAviationRisk(lat, lon) {
     const userPoint = turf.point([lon, lat]);
     const airportsData = await loadAirports();
@@ -511,12 +544,24 @@ async function getAviationRisk(lat, lon) {
         airportText = `فاصله تا نزدیک‌ترین فرودگاه (${nearestName}): ${minDist.toFixed(1)} کیلومتر`;
     }
 
-    // TODO: لایه دالان هوایی (نیاز به داده AIP)
-    // فعلاً فقط فرودگاه در نظر گرفته می‌شود.
+       // بررسی دالان‌های هوایی
+    const airwayData = await getAirwayDistance(lat, lon);
+    let finalScore = airportScore;
+    let finalText = airportText;
+
+    if (airwayData) {
+        if (airwayData.distance <= 5) finalScore += 2;
+        else if (airwayData.distance <= 15) finalScore += 1;
+        
+        finalText += ` | فاصله تا دالان (${airwayData.name}): ${airwayData.distance.toFixed(1)} کیلومتر`;
+    }
+
+    // سقف امتیاز ۵ است
+    finalScore = Math.min(5, finalScore);
 
     return {
-        score: airportScore,
-        text: airportText,
+        score: finalScore,
+        text: finalText,
         nearestName: nearestName,
         distance: minDist
     };
