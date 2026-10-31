@@ -219,7 +219,7 @@ async function getClimateData(lat, lon) {
         const now = new Date();
     const endYear = now.getFullYear() - 1;
     const startYear = endYear - 19;
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean&wind_speed_unit=kmh&timezone=auto`;
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean,cape&wind_speed_unit=kmh&timezone=auto`;
     
     try {
         const res = await fetch(url);
@@ -230,6 +230,16 @@ async function getClimateData(lat, lon) {
         const precip = data.daily.precipitation_sum;
         const temp = data.daily.temperature_2m_mean;
         const wind = data.daily.wind_speed_10m_mean; 
+                const capeArr = data.daily.cape || [];
+        let totalCape = 0;
+        let validCapeCount = 0;
+        capeArr.forEach(val => {
+            if (val !== null && val !== undefined) {
+                totalCape += val;
+                validCapeCount++;
+            }
+        });
+        const avgCape = validCapeCount > 0 ? (totalCape / validCapeCount) : 0;
         
         const monthlyPrecip = Array(12).fill(0);
         const monthlyTemp = Array(12).fill(0);
@@ -269,10 +279,11 @@ async function getClimateData(lat, lon) {
         const windiestMonthIndex = monthlyWind.indexOf(Math.max(...monthlyWind));
 
         const monthOrder = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1];
-        return {
+                return {
             precip: { monthly: monthOrder.map(m=>avgMonthlyPrecip[m]), annualAvg: annualPrecipAvg, pci: pci },
             temp: { monthly: monthOrder.map(m=>monthlyTemp[m]), annualAvg: annualTempAvg },
-            wind: { monthly: monthOrder.map(m=>monthlyWind[m]), annualAvg: annualWindAvgKmh, windiestMonth: MONTH_NAMES_FA[monthOrder.indexOf(windiestMonthIndex)] }
+            wind: { monthly: monthOrder.map(m=>monthlyWind[m]), annualAvg: annualWindAvgKmh, windiestMonth: MONTH_NAMES_FA[monthOrder.indexOf(windiestMonthIndex)] },
+            cape: { annualAvg: avgCape }
         };
     } catch (e) { return null; }
 }
@@ -690,11 +701,22 @@ async function analyzeAll() {
             subsidenceText = 'داده فرونشست در دسترس نیست (تخمین بر اساس منطقه).';
         }
 
-        let lScore = 2;
+                let lScore = 1;
         if (climate) {
-            if (climate.precip.annualAvg > 700) lScore = 4;
-            else if (climate.precip.annualAvg > 300) lScore = 3;
+            if (climate.precip.annualAvg > 700) lScore = 3;
+            else if (climate.precip.annualAvg > 300) lScore = 2;
+
+            if (climate.cape) {
+                const cape = climate.cape.annualAvg;
+                if (cape > 2000) lScore += 2;
+                else if (cape > 1000) lScore += 1;
+                
+                if (cape > 1000 && climate.precip.annualAvg < 100) {
+                    lScore -= 0.5; 
+                }
+            }
         }
+        lScore = Math.min(5, Math.max(1, lScore));
 
         let wScore = 1;
         if (climate) {
