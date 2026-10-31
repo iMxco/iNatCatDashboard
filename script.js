@@ -657,12 +657,14 @@ async function analyzeAll() {
             else if (climate.wind.annualAvg > 15) wScore = 2.5;
         }
 
-        let tScore = 1.9;
+              let tScore = 1.9;
         if (climate) {
             if (climate.temp.annualAvg > 25 || climate.temp.annualAvg < 5) tScore = 3;
         }
 
-        const scores = [fScore, eScore, landScore, subScore, lScore, wScore, tScore];
+        const avScore = aviationData ? aviationData.score : 1;
+
+        const scores = [fScore, eScore, landScore, subScore, lScore, wScore, tScore, avScore];
         const overall = scores.reduce((a,b)=>a+b,0) / scores.length;
 
         document.getElementById('overallRisk').textContent = overall >= 4 ? '🔴 ریسک کلی: بالا' : overall >= 2.5 ? '🟡 ریسک کلی: متوسط' : '🟢 ریسک کلی: پایین';
