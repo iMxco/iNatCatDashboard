@@ -190,7 +190,6 @@ function selectSearchResult(lat, lon) {
     document.getElementById('searchResults').classList.remove('show');
     document.getElementById('searchInput').value = '';
 }
-
 // ============================================================
 // دریافت داده‌های محیطی
 // ============================================================
@@ -237,8 +236,9 @@ async function getCapeData(lat, lon) {
         return count > 0 ? (total / count) : null;
     } catch (e) { return null; }
 }
+
 async function getClimateData(lat, lon) {
-        const now = new Date();
+    const now = new Date();
     const endYear = now.getFullYear() - 1;
     const startYear = endYear - 19;
     const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean&wind_speed_unit=kmh&timezone=auto`;
@@ -252,16 +252,6 @@ async function getClimateData(lat, lon) {
         const precip = data.daily.precipitation_sum;
         const temp = data.daily.temperature_2m_mean;
         const wind = data.daily.wind_speed_10m_mean; 
-                const capeArr = data.daily.cape || [];
-        let totalCape = 0;
-        let validCapeCount = 0;
-        capeArr.forEach(val => {
-            if (val !== null && val !== undefined) {
-                totalCape += val;
-                validCapeCount++;
-            }
-        });
-        const avgCape = validCapeCount > 0 ? (totalCape / validCapeCount) : 0;
         
         const monthlyPrecip = Array(12).fill(0);
         const monthlyTemp = Array(12).fill(0);
@@ -301,11 +291,10 @@ async function getClimateData(lat, lon) {
         const windiestMonthIndex = monthlyWind.indexOf(Math.max(...monthlyWind));
 
         const monthOrder = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1];
-                return {
+        return {
             precip: { monthly: monthOrder.map(m=>avgMonthlyPrecip[m]), annualAvg: annualPrecipAvg, pci: pci },
             temp: { monthly: monthOrder.map(m=>monthlyTemp[m]), annualAvg: annualTempAvg },
-            wind: { monthly: monthOrder.map(m=>monthlyWind[m]), annualAvg: annualWindAvgKmh, windiestMonth: MONTH_NAMES_FA[monthOrder.indexOf(windiestMonthIndex)] },
-            cape: { annualAvg: avgCape }
+            wind: { monthly: monthOrder.map(m=>monthlyWind[m]), annualAvg: annualWindAvgKmh, windiestMonth: MONTH_NAMES_FA[monthOrder.indexOf(windiestMonthIndex)] }
         };
     } catch (e) { return null; }
 }
@@ -328,7 +317,6 @@ async function getVs30Estimate(slopePercent) {
     if (slopePercent === null) return 300;
     if (slopePercent > 15) return 760; else if (slopePercent > 5) return 450; else return 250;
 }
-
 // ============================================================
 // GloFAS (با جستجوی اطراف)
 // ============================================================
@@ -449,7 +437,6 @@ async function loadHanoverData() {
 async function getSubsidenceData(lat, lon) {
     const userPoint = turf.point([lon, lat]);
     
-    // مرحله ۱: جستجو در فایل شهرها (با شعاع پویا - دقیق‌ترین حالت)
     const citiesData = await loadCitiesData();
     if (citiesData && citiesData.features) {
         let minDist = Infinity, nearest = null, chosenRadius = 50;
@@ -476,7 +463,6 @@ async function getSubsidenceData(lat, lon) {
         }
     }
 
-    // مرحله ۲: جستجو در فایل هانوفر (بدون محدودیت شعاع - نزدیک‌ترین نقطه)
     const hanoverData = await loadHanoverData();
     if (hanoverData && hanoverData.features) {
         let minDist = Infinity, nearest = null;
@@ -484,7 +470,6 @@ async function getSubsidenceData(lat, lon) {
         hanoverData.features.forEach(f => {
             if (!f.geometry || f.geometry.type !== 'Point') return;
             const dist = turf.distance(userPoint, f, { units: 'kilometers' });
-            // 🌟 حذف محدودیت شعاع: هر نقطه‌ای که نزدیک‌تر باشد، انتخاب می‌شود
             if (dist < minDist) {
                 minDist = dist; nearest = f;
             }
@@ -500,7 +485,6 @@ async function getSubsidenceData(lat, lon) {
         }
     }
 
-    // مرحله ۳: هیچ داده‌ای یافت نشد (فقط اگر فایل هانوفر وجود نداشته باشد)
     return { found: false, message: 'داده فرونشست در دسترس نیست.' };
 }
 
@@ -577,7 +561,6 @@ async function getAviationRisk(lat, lon) {
         airportText = `فاصله تا نزدیک‌ترین فرودگاه (${nearestName}): ${minDist.toFixed(1)} کیلومتر`;
     }
 
-       // بررسی دالان‌های هوایی
     const airwayData = await getAirwayDistance(lat, lon);
     let finalScore = airportScore;
     let finalText = airportText;
@@ -589,7 +572,6 @@ async function getAviationRisk(lat, lon) {
         finalText += ` | فاصله تا دالان (${airwayData.name}): ${airwayData.distance.toFixed(1)} کیلومتر`;
     }
 
-    // سقف امتیاز ۵ است
     finalScore = Math.min(5, finalScore);
 
     return {
@@ -599,7 +581,6 @@ async function getAviationRisk(lat, lon) {
         distance: minDist
     };
 }
-
 // ============================================================
 // زلزله
 // ============================================================
@@ -650,8 +631,7 @@ async function analyzeAll() {
     const token = getToken();
 
     try {
-               
-                const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
+        const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
             getElevation(lat, lon),
             estimateSlope(lat, lon),
             getClimateData(lat, lon),
@@ -665,7 +645,6 @@ async function analyzeAll() {
             getAviationRisk(lat, lon),
             getCapeData(lat, lon)
         ]);
-
 
         document.getElementById('loading').style.display = 'none';
         
@@ -726,13 +705,12 @@ async function analyzeAll() {
             subsidenceText = 'داده فرونشست در دسترس نیست (تخمین بر اساس منطقه).';
         }
 
-                       let lScore = 1;
+        let lScore = 1;
         if (climate) {
             if (climate.precip.annualAvg > 700) lScore = 3;
             else if (climate.precip.annualAvg > 300) lScore = 2;
 
-            // استفاده از متغیر capeData که از API ساعتی گرفته شد
-            if (capeData) {
+            if (typeof capeData !== 'undefined' && capeData !== null) {
                 if (capeData > 2000) lScore += 2;
                 else if (capeData > 1000) lScore += 1;
                 
@@ -749,7 +727,7 @@ async function analyzeAll() {
             else if (climate.wind.annualAvg > 15) wScore = 2.5;
         }
 
-              let tScore = 1.9;
+        let tScore = 1.9;
         if (climate) {
             if (climate.temp.annualAvg > 25 || climate.temp.annualAvg < 5) tScore = 3;
         }
@@ -761,9 +739,8 @@ async function analyzeAll() {
 
         document.getElementById('overallRisk').textContent = overall >= 4 ? '🔴 ریسک کلی: بالا' : overall >= 2.5 ? '🟡 ریسک کلی: متوسط' : '🟢 ریسک کلی: پایین';
         document.getElementById('overallScore').innerHTML = `<strong>نمره کلی: ${overall.toFixed(1)} از ۵</strong>`;
-
-        const getClass = v => v >= 4 ? 'very-high' : v >= 3 ? 'high' : v >= 2 ? 'medium' : 'low';
-               document.getElementById('hazardCards').innerHTML = `
+                const getClass = v => v >= 4 ? 'very-high' : v >= 3 ? 'high' : v >= 2 ? 'medium' : 'low';
+        document.getElementById('hazardCards').innerHTML = `
             <div class="hazard-card"><h4>🌊 سیل</h4><div class="score ${getClass(fScore)}">${fScore.toFixed(1)}</div></div>
             <div class="hazard-card"><h4>🌍 زلزله</h4><div class="score ${getClass(eScore)}">${eScore.toFixed(1)}</div></div>
             <div class="hazard-card"><h4>⛰️ رانش زمین</h4><div class="score ${getClass(landScore)}">${landScore.toFixed(1)}</div></div>
@@ -843,44 +820,9 @@ async function analyzeAll() {
                     <li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li>
                  </ul>`;
 
-              html += `<h4>📉 فرونشست زمین</h4>`;
-        html += `<ul><li>${subsidenceText}</li></ul>`;
+        html += `<h4>📉 فرونشست زمین</h4><ul><li>${subsidenceText}</li></ul>`;
 
-        html += `<h4>⚡ صاعقه</h4>`;
-        html += `<ul>`;
-        if (climate) {
-            html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            if (climate.cape) html += `<li>انرژی همرفتی (CAPE): ${climate.cape.annualAvg.toFixed(0)} J/kg</li>`;
-            html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-        }
-        html += `</ul>`;
-
-        html += `<h4>🌪️ طوفان و 🌡️ دما</h4>`;
-        html += `<ul>`;
-        if (climate) {
-            html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li>`;
-            html += `<li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`;
-        }
-        html += `</ul>`;
-
-              // بخش جدید برای نمایش جزئیات صاعقه
-        html += `<h4>⚡ صاعقه</h4>`;
-        html += `<ul>`;
-        if (climate) {
-            const annualPrecip = climate.precip ? climate.precip.annualAvg.toFixed(1) : 'نامشخص';
-            html += `<li>میانگین بارش سالانه: ${annualPrecip} mm</li>`;
-            
-                      if (capeData) {
-                html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
-            } else {
-                html += `<li>انرژی همرفتی (CAPE): دریافت نشد</li>`;
-            }
-        } else {
-            html += `<li>داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
-        }
-        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-        html += `</ul>`;
-        // --- شروع بخش جزئیات اقلیم (طوفان، دما، صاعقه) ---
+        // بخش طوفان و دما
         html += `<h4>🌪️ طوفان و 🌡️ دما</h4>`;
         html += `<ul>`;
         if (climate) {
@@ -891,26 +833,29 @@ async function analyzeAll() {
         }
         html += `</ul>`;
 
+        // بخش صاعقه
         html += `<h4>⚡ صاعقه</h4>`;
         html += `<ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            if (climate.cape) {
-                html += `<li>انرژی همرفتی (CAPE): ${climate.cape.annualAvg.toFixed(0)} J/kg</li>`;
+            if (typeof capeData !== 'undefined' && capeData !== null && capeData > 0) {
+                html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
-                html += `<li>انرژی همرفتی (CAPE): دریافت نشد</li>`;
+                html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده است.</li>`;
             }
         } else {
             html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
         }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
         html += `</ul>`;
-        // --- پایان بخش جزئیات اقلیم ---
+
+        // بخش هوانوردی
+        html += `<h4>✈️ خطر هوانوردی</h4>`;
+        html += `<ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
 
         document.getElementById('paramDetails').innerHTML = html;
-        document.getElementById('paramDetails').innerHTML = html;
 
-                generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
+        generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
         document.getElementById('result').classList.add('show');
 
     } catch (e) {
@@ -919,35 +864,109 @@ async function analyzeAll() {
         document.getElementById('loading').style.display = 'none';
     }
 }
-
 // ============================================================
 // نمودارها
 // ============================================================
-function drawRadarChart(s) { const ctx = document.getElementById('radarChart').getContext('2d'); if (radarChart) radarChart.destroy(); radarChart = new Chart(ctx, { type: 'radar', data: { labels: ['سیل','زلزله','رانش زمین','فرونشست زمین','صاعقه','طوفان','دما','هوانوردی'], datasets: [{ label: 'امتیاز', data: s, backgroundColor: 'rgba(49,130,206,0.3)', borderColor: '#3182ce' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 5 } } } }); }
-function drawBarChart(s) { const ctx = document.getElementById('barChart').getContext('2d'); if (barChart) barChart.destroy(); barChart = new Chart(ctx, { type: 'bar', data: { labels: ['سیل','زلزله','رانش زمین','فرونشست زمین','صاعقه','طوفان','دما','هوانوردی'], datasets: [{ label: 'امتیاز', data: s, backgroundColor: s.map(v=>v>=4?'#e53e3e':v>=3?'#dd6b20':'#38a169') }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 5 } } } }); }
-function drawPrecipChart(d) { const ctx = document.getElementById('precipChart').getContext('2d'); if (precipChart) precipChart.destroy(); precipChart = new Chart(ctx, { type: 'bar', data: { labels: MONTH_NAMES_FA, datasets: [{ label: 'mm', data: d, backgroundColor: '#3182ce' }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-function drawWindChart(d) { const ctx = document.getElementById('windChart').getContext('2d'); if (windChart) windChart.destroy(); windChart = new Chart(ctx, { type: 'line', data: { labels: MONTH_NAMES_FA, datasets: [{ label: 'km/h', data: d, borderColor: '#38a169', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-function drawTempChart(d) { const ctx = document.getElementById('tempChart').getContext('2d'); if (tempChart) tempChart.destroy(); tempChart = new Chart(ctx, { type: 'line', data: { labels: MONTH_NAMES_FA, datasets: [{ label: 'C°', data: d, borderColor: '#dd6b20', tension: 0.3 }] }, options: { responsive: true, maintainAspectRatio: false } }); }
+function drawRadarChart(s) { 
+    const ctx = document.getElementById('radarChart').getContext('2d'); 
+    if (radarChart) radarChart.destroy(); 
+    radarChart = new Chart(ctx, { 
+        type: 'radar', 
+        data: { 
+            labels: ['سیل','زلزله','رانش زمین','فرونشست زمین','صاعقه','طوفان','دما','هوانوردی'], 
+            datasets: [{ label: 'امتیاز', data: s, backgroundColor: 'rgba(49,130,206,0.3)', borderColor: '#3182ce' }] 
+        }, 
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 5 } } } 
+    }); 
+}
+
+function drawBarChart(s) { 
+    const ctx = document.getElementById('barChart').getContext('2d'); 
+    if (barChart) barChart.destroy(); 
+    barChart = new Chart(ctx, { 
+        type: 'bar', 
+        data: { 
+            labels: ['سیل','زلزله','رانش زمین','فرونشست زمین','صاعقه','طوفان','دما','هوانوردی'], 
+            datasets: [{ label: 'امتیاز', data: s, backgroundColor: s.map(v=>v>=4?'#e53e3e':v>=3?'#dd6b20':'#38a169') }] 
+        }, 
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 5 } } } 
+    }); 
+}
+
+function drawPrecipChart(d) { 
+    const ctx = document.getElementById('precipChart').getContext('2d'); 
+    if (precipChart) precipChart.destroy(); 
+    precipChart = new Chart(ctx, { 
+        type: 'bar', 
+        data: { labels: MONTH_NAMES_FA, datasets: [{ label: 'mm', data: d, backgroundColor: '#3182ce' }] }, 
+        options: { responsive: true, maintainAspectRatio: false } 
+    }); 
+}
+
+function drawWindChart(d) { 
+    const ctx = document.getElementById('windChart').getContext('2d'); 
+    if (windChart) windChart.destroy(); 
+    windChart = new Chart(ctx, { 
+        type: 'line', 
+        data: { labels: MONTH_NAMES_FA, datasets: [{ label: 'km/h', data: d, borderColor: '#38a169', tension: 0.3 }] }, 
+        options: { responsive: true, maintainAspectRatio: false } 
+    }); 
+}
+
+function drawTempChart(d) { 
+    const ctx = document.getElementById('tempChart').getContext('2d'); 
+    if (tempChart) tempChart.destroy(); 
+    tempChart = new Chart(ctx, { 
+        type: 'line', 
+        data: { labels: MONTH_NAMES_FA, datasets: [{ label: 'C°', data: d, borderColor: '#dd6b20', tension: 0.3 }] }, 
+        options: { responsive: true, maintainAspectRatio: false } 
+    }); 
+}
 
 // ============================================================
 // دستیار بیمه‌گر
 // ============================================================
 function generateInsuranceAssistant(e, s, l, f, land, av, climate) {
-    const c = document.getElementById('insuranceContent'); let html = ''; let has = false;
-    if (e > 2.5) { has = true; html += `<div style="background:#fff5f5; padding:15px; border-right:4px solid #e53e3e; margin-bottom:15px;"><h4>🌍 زلزله (امتیاز: ${e.toFixed(1)})</h4><p><strong>مدارک:</strong> گزارش ژئوتکنیک، نقشه سازه، سوابق ترک.</p><p><strong>توصیه:</strong> دامنه پوشش زلزله و فرانشیز درج شود.</p></div>`; }
-    if (s > 2.5) { has = true; html += `<div style="background:#fffaf0; padding:15px; border-right:4px solid #dd6b20; margin-bottom:15px;"><h4>📉 فرونشست (امتیاز: ${s.toFixed(1)})</h4><p><strong>مدارک:</strong> پایش تراز، وضعیت خطوط مدفون.</p><p><strong>توصیه:</strong> پوشش فرونشست جدا از زلزله روشن شود.</p></div>`; }
-    if (l > 2.5) { has = true; html += `<div style="background:#f0fff4; padding:15px; border-right:4px solid #38a169; margin-bottom:15px;"><h4>⚡ صاعقه (امتیاز: ${l.toFixed(1)})</h4><p><strong>مدارک:</strong> طرح حفاظت صاعقه، لیست تجهیزات حساس.</p><p><strong>توصیه:</strong> پوشش اضافه‌ولتاژ جداگانه روشن شود.</p></div>`; }
-    if (f > 2.5 && climate) { has = true; html += `<div style="background:#ebf8ff; padding:15px; border-right:4px solid #3182ce; margin-bottom:15px;"><h4>🌊 سیل (امتیاز: ${f.toFixed(1)})</h4><p><strong>وضعیت:</strong> بارش سالانه ${climate.precip.annualAvg.toFixed(0)} mm.</p><p><strong>توصیه:</strong> بازدید از زهکشی و اخذ مدارک سیلاب‌های گذشته.</p></div>`; }
-    if (land > 2.5) { has = true; html += `<div style="background:#faf5ff; padding:15px; border-right:4px solid #805ad5; margin-bottom:15px;"><h4>⛰️ رانش زمین (امتیاز: ${land.toFixed(1)})</h4><p><strong>توصیه:</strong> بررسی پایداری شیب و زهکشی دامنه‌ها.</p></div>`; }
-        if (av > 2.5) { 
+    const c = document.getElementById('insuranceContent'); 
+    let html = ''; 
+    let has = false;
+    
+    if (e > 2.5) { 
+        has = true; 
+        html += `<div style="background:#fff5f5; padding:15px; border-right:4px solid #e53e3e; margin-bottom:15px;"><h4>🌍 زلزله (امتیاز: ${e.toFixed(1)})</h4><p><strong>مدارک:</strong> گزارش ژئوتکنیک، نقشه سازه، سوابق ترک.</p><p><strong>توصیه:</strong> دامنه پوشش زلزله و فرانشیز درج شود.</p></div>`; 
+    }
+    
+    if (s > 2.5) { 
+        has = true; 
+        html += `<div style="background:#fffaf0; padding:15px; border-right:4px solid #dd6b20; margin-bottom:15px;"><h4>📉 فرونشست زمین (امتیاز: ${s.toFixed(1)})</h4><p><strong>مدارک:</strong> پایش تراز، وضعیت خطوط مدفون.</p><p><strong>توصیه:</strong> پوشش فرونشست جدا از زلزله روشن شود.</p></div>`; 
+    }
+    
+    if (l > 2.5) { 
+        has = true; 
+        html += `<div style="background:#f0fff4; padding:15px; border-right:4px solid #38a169; margin-bottom:15px;"><h4>⚡ صاعقه (امتیاز: ${l.toFixed(1)})</h4><p><strong>مدارک:</strong> طرح حفاظت صاعقه، لیست تجهیزات حساس.</p><p><strong>توصیه:</strong> پوشش اضافه‌ولتاژ جداگانه روشن شود.</p></div>`; 
+    }
+    
+    if (f > 2.5 && climate) { 
+        has = true; 
+        html += `<div style="background:#ebf8ff; padding:15px; border-right:4px solid #3182ce; margin-bottom:15px;"><h4>🌊 سیل (امتیاز: ${f.toFixed(1)})</h4><p><strong>وضعیت:</strong> بارش سالانه ${climate.precip.annualAvg.toFixed(0)} mm.</p><p><strong>توصیه:</strong> بازدید از زهکشی و اخذ مدارک سیلاب‌های گذشته.</p></div>`; 
+    }
+    
+    if (land > 2.5) { 
+        has = true; 
+        html += `<div style="background:#faf5ff; padding:15px; border-right:4px solid #805ad5; margin-bottom:15px;"><h4>⛰️ رانش زمین (امتیاز: ${land.toFixed(1)})</h4><p><strong>توصیه:</strong> بررسی پایداری شیب و زهکشی دامنه‌ها.</p></div>`; 
+    }
+
+    if (av > 2.5) { 
         has = true; 
         html += `<div style="background:#e6fffa; padding:15px; border-right:4px solid #319795; margin-bottom:15px;">`;
         html += `<h4>✈️ هوانوردی (امتیاز: ${av.toFixed(1)})</h4>`;
         html += `<p><strong>توصیه:</strong> بررسی حریم فرودگاه، موانع پروازی، و خطر پرنده یا پهپاد.</p>`;
         html += `</div>`; 
     }
+    
     if (!has) html = '<p style="color:#38a169;">✅ هیچ مخاطره‌ای با امتیاز بالاتر از ۲.۵ یافت نشد.</p>';
-    c.innerHTML = html; document.getElementById('insuranceAssistant').style.display = 'block';
+    c.innerHTML = html; 
+    document.getElementById('insuranceAssistant').style.display = 'block';
 }
 
 // ============================================================
