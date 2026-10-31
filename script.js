@@ -671,14 +671,15 @@ async function analyzeAll() {
         document.getElementById('overallScore').innerHTML = `<strong>نمره کلی: ${overall.toFixed(1)} از ۵</strong>`;
 
         const getClass = v => v >= 4 ? 'very-high' : v >= 3 ? 'high' : v >= 2 ? 'medium' : 'low';
-        document.getElementById('hazardCards').innerHTML = `
+               document.getElementById('hazardCards').innerHTML = `
             <div class="hazard-card"><h4>🌊 سیل</h4><div class="score ${getClass(fScore)}">${fScore.toFixed(1)}</div></div>
             <div class="hazard-card"><h4>🌍 زلزله</h4><div class="score ${getClass(eScore)}">${eScore.toFixed(1)}</div></div>
-            <div class="hazard-card"><h4>⛰️ رانش</h4><div class="score ${getClass(landScore)}">${landScore.toFixed(1)}</div></div>
-            <div class="hazard-card"><h4>📉 فرونشست</h4><div class="score ${getClass(subScore)}">${subScore.toFixed(1)}</div></div>
+            <div class="hazard-card"><h4>⛰️ رانش زمین</h4><div class="score ${getClass(landScore)}">${landScore.toFixed(1)}</div></div>
+            <div class="hazard-card"><h4>📉 فرونشست زمین</h4><div class="score ${getClass(subScore)}">${subScore.toFixed(1)}</div></div>
             <div class="hazard-card"><h4>⚡ صاعقه</h4><div class="score ${getClass(lScore)}">${lScore.toFixed(1)}</div></div>
-            <div class="hazard-card"><h4>💨 باد</h4><div class="score ${getClass(wScore)}">${wScore.toFixed(1)}</div></div>
+            <div class="hazard-card"><h4>🌪️ طوفان</h4><div class="score ${getClass(wScore)}">${wScore.toFixed(1)}</div></div>
             <div class="hazard-card"><h4>🌡️ دما</h4><div class="score ${getClass(tScore)}">${tScore.toFixed(1)}</div></div>
+            <div class="hazard-card"><h4>✈️ هوانوردی</h4><div class="score ${getClass(avScore)}">${avScore.toFixed(1)}</div></div>
         `;
 
         drawRadarChart(scores);
