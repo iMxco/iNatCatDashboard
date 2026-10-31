@@ -651,7 +651,7 @@ async function analyzeAll() {
 
     try {
                
-          const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
+                const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
             getElevation(lat, lon),
             estimateSlope(lat, lon),
             getClimateData(lat, lon),
@@ -664,7 +664,7 @@ async function analyzeAll() {
             getSubsidenceData(lat, lon),
             getAviationRisk(lat, lon),
             getCapeData(lat, lon)
-        ]);              
+        ]);
 
 
         document.getElementById('loading').style.display = 'none';
