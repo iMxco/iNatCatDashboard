@@ -619,156 +619,37 @@ async function analyzeAll() {
 
     try {
         const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
-            getElevation(lat, lon),
-            estimateSlope(lat, lon),
-            getClimateData(lat, lon),
-            getPrecipitation(lat, lon),
-            getFloodDischarge(lat, lon),
-            getNDVI(lat, lon, token),
-            getLandCover(lat, lon, token),
-            getRiverDistance(lat, lon),
-            getEarthquakeData(lat, lon),
-            getSubsidenceData(lat, lon),
-            getAviationRisk(lat, lon),
-            getCapeData(lat, lon)
+            getElevation(lat, lon), estimateSlope(lat, lon), getClimateData(lat, lon), getPrecipitation(lat, lon), getFloodDischarge(lat, lon), getNDVI(lat, lon, token), getLandCover(lat, lon, token), getRiverDistance(lat, lon), getEarthquakeData(lat, lon), getSubsidenceData(lat, lon), getAviationRisk(lat, lon), getCapeData(lat, lon)
         ]);
 
         document.getElementById('loading').style.display = 'none';
+        if (autoElevation === null) { alert("خطا در دریافت ارتفاع"); return; }
         
-        if (autoElevation === null) {
-            alert("خطا در دریافت ارتفاع از سطح دریا از سرور");
-            return;
-        }
-        
-        const slopePercent = slopeData ? slopeData.slopePercent : null;
+        const slopePercent = slopeData ? slopeData.slopePercent : null; 
         const vs30 = await getVs30Estimate(slopePercent);
 
-        let fScore = 1;
-        if (climate) {
-            if (climate.precip.annualAvg > 700) fScore = 4;
-            else if (climate.precip.annualAvg > 500) fScore = 3;
-            else if (climate.precip.annualAvg > 300) fScore = 2;
-            if (climate.precip.pci > 25) fScore += 0.5;
-        }
-        if (discharge && discharge.ratio > 2) fScore += 0.5;
-        if (river && river.found && river.distance < 500) fScore += 0.5;
-        fScore = Math.min(5, fScore);
+        let fScore = 1; if (climate) { if (climate.precip.annualAvg > 700) fScore = 4; else if (climate.precip.annualAvg > 500) fScore = 3; else if (climate.precip.annualAvg > 300) fScore = 2; if (climate.precip.pci > 25) fScore += 0.5; } if (discharge && discharge.ratio > 2) fScore += 0.5; if (river && river.found && river.distance < 500) fScore += 0.5; fScore = Math.min(5, fScore);
 
-        let eScore = 1;
-        if (eqData.maxMag >= 6) eScore = 4;
-        else if (eqData.maxMag >= 5) eScore = 3;
-        else if (eqData.maxMag >= 4) eScore = 2;
-        if (eqData.faultDistance < 20) eScore += 0.5;
-        if (vs30 < 300) eScore += 0.5;
-        eScore = Math.min(5, eScore);
+        let eScore = 1; if (eqData.maxMag >= 6) eScore = 4; else if (eqData.maxMag >= 5) eScore = 3; else if (eqData.maxMag >= 4) eScore = 2; if (eqData.faultDistance < 20) eScore += 0.5; if (vs30 < 300) eScore += 0.5; eScore = Math.min(5, eScore);
 
-        let landScore = 1;
-        if (slopePercent) {
-            if (slopePercent > 15) landScore = 4;
-            else if (slopePercent > 5) landScore = 3;
-            else if (slopePercent > 2) landScore = 2;
-        }
-        if (climate && climate.precip.annualAvg > 700) landScore += 0.5;
-        landScore = Math.min(5, landScore);
+        let landScore = 1; if (slopePercent) { if (slopePercent > 15) landScore = 4; else if (slopePercent > 5) landScore = 3; else if (slopePercent > 2) landScore = 2; } if (climate && climate.precip.annualAvg > 700) landScore += 0.5; landScore = Math.min(5, landScore);
 
-        let subScore = 1;
-        let subsidenceText = '';
-        
-        if (subsidenceData && subsidenceData.found) {
-            const absRate = Math.abs(subsidenceData.rate);
-            if (absRate > 20) subScore = 5;
-            else if (absRate > 10) subScore = 4;
-            else if (absRate > 5) subScore = 3;
-            else if (absRate > 2) subScore = 2;
-            else subScore = 1;
-            
-            const sourceLabel = (subsidenceData.source === 'city') ? 'داده شهری' : 'داده ماهواره‌ای';
-            subsidenceText = `نرخ فرونشست: ${absRate.toFixed(1)} سانتی‌متر در سال (منبع: ${sourceLabel}، فاصله: ${subsidenceData.distance.toFixed(1)} کیلومتر)`;
-        } else if (subsidenceData && subsidenceData.message) {
-            subsidenceText = `⚠️ ${subsidenceData.message}`;
-        } else {
-            if (lat > 35 && lat < 36 && lon > 51 && lon < 52) subScore = 3.5; 
-            else if (lat > 32 && lat < 36 && lon > 50 && lon < 55) subScore = 4.5; 
-            subsidenceText = 'داده فرونشست در دسترس نیست (تخمین بر اساس منطقه).';
-        }
+        let subScore = 1; let subsidenceText = '';
+        if (subsidenceData && subsidenceData.found) { const absRate = Math.abs(subsidenceData.rate); if (absRate > 20) subScore = 5; else if (absRate > 10) subScore = 4; else if (absRate > 5) subScore = 3; else if (absRate > 2) subScore = 2; else subScore = 1; const sourceLabel = (subsidenceData.source === 'city') ? 'داده شهری' : 'داده ماهواره‌ای'; subsidenceText = `نرخ فرونشست: ${absRate.toFixed(1)} سانتی‌متر در سال (منبع: ${sourceLabel}، فاصله: ${subsidenceData.distance.toFixed(1)} کیلومتر)`; } else if (subsidenceData && subsidenceData.message) { subsidenceText = `⚠️ ${subsidenceData.message}`; } else { if (lat > 35 && lat < 36 && lon > 51 && lon < 52) subScore = 3.5; else if (lat > 32 && lat < 36 && lon > 50 && lon < 55) subScore = 4.5; subsidenceText = 'داده فرونشست در دسترس نیست (تخمین بر اساس منطقه).'; }
 
-              // خواندن ارتفاع سازه از فیلد جدید
         const buildingHeight = parseFloat(document.getElementById('buildingHeight').value) || 0;
+        let lScore = 1; if (climate) { if (climate.precip.annualAvg > 700) lScore = 3; else if (climate.precip.annualAvg > 300) lScore = 2; if (typeof capeData !== 'undefined' && capeData !== null) { if (capeData > 2000) lScore += 2; else if (capeData > 1000) lScore += 1; if (capeData > 1000 && climate.precip.annualAvg < 100) lScore -= 0.5; } if (autoElevation > 2000) lScore += 1; else if (autoElevation > 1000) lScore += 0.5; if (buildingHeight > 30) lScore += 1; else if (buildingHeight > 10) lScore += 0.5; } lScore = Math.min(5, Math.max(1, lScore));
 
-        let lScore = 1;
-        if (climate) {
-            if (climate.precip.annualAvg > 700) lScore = 3;
-            else if (climate.precip.annualAvg > 300) lScore = 2;
-
-            if (typeof capeData !== 'undefined' && capeData !== null) {
-                if (capeData > 2000) lScore += 2;
-                else if (capeData > 1000) lScore += 1;
-                
-                if (capeData > 1000 && climate.precip.annualAvg < 100) {
-                    lScore -= 0.5; 
-                }
-            }
-
-            // 🌟 تأثیر ارتفاع از سطح دریا
-            if (autoElevation > 2000) {
-                lScore += 1;
-            } else if (autoElevation > 1000) {
-                lScore += 0.5;
-            }
-
-            // 🌟 تأثیر ارتفاع سازه (استاندارد IEC 62305)
-            if (buildingHeight > 30) {
-                       // خواندن ارتفاع سازه از فیلد ورودی
-        const buildingHeight = parseFloat(document.getElementById('buildingHeight').value) || 0;
-
-        let lScore = 1;
-        if (climate) {
-            if (climate.precip.annualAvg > 700) lScore = 3;
-            else if (climate.precip.annualAvg > 300) lScore = 2;
-
-            if (typeof capeData !== 'undefined' && capeData !== null) {
-                if (capeData > 2000) lScore += 2;
-                else if (capeData > 1000) lScore += 1;
-                
-                if (capeData > 1000 && climate.precip.annualAvg < 100) {
-                    lScore -= 0.5; 
-                }
-            }
-
-            // 🌟 تأثیر ارتفاع از سطح دریا (با استفاده از autoElevation)
-            if (typeof autoElevation !== 'undefined' && autoElevation !== null) {
-                if (autoElevation > 2000) lScore += 1;
-                else if (autoElevation > 1000) lScore += 0.5;
-            }
-
-            // 🌟 تأثیر ارتفاع سازه (استاندارد IEC 62305)
-            if (buildingHeight > 30) {
-                lScore += 1;
-            } else if (buildingHeight > 10) {
-                lScore += 0.5;
-            }
-        }
-        lScore = Math.min(5, Math.max(1, lScore));
-
-        let wScore = 1;
-        if (climate) {
-            if (climate.wind.annualAvg > 30) wScore = 4;
-            else if (climate.wind.annualAvg > 15) wScore = 2.5;
-        }
-
-        let tScore = 1.9;
-        if (climate) {
-            if (climate.temp.annualAvg > 25 || climate.temp.annualAvg < 5) tScore = 3;
-        }
-
+        let wScore = 1; if (climate) { if (climate.wind.annualAvg > 30) wScore = 4; else if (climate.wind.annualAvg > 15) wScore = 2.5; }
+        let tScore = 1.9; if (climate) { if (climate.temp.annualAvg > 25 || climate.temp.annualAvg < 5) tScore = 3; }
         const avScore = aviationData ? aviationData.score : 1;
-
         const scores = [fScore, eScore, landScore, subScore, lScore, wScore, tScore, avScore];
         const overall = scores.reduce((a,b)=>a+b,0) / scores.length;
 
         document.getElementById('overallRisk').textContent = overall >= 4 ? '🔴 ریسک کلی: بالا' : overall >= 2.5 ? '🟡 ریسک کلی: متوسط' : '🟢 ریسک کلی: پایین';
         document.getElementById('overallScore').innerHTML = `<strong>نمره کلی: ${overall.toFixed(1)} از ۵</strong>`;
-                const getClass = v => v >= 4 ? 'very-high' : v >= 3 ? 'high' : v >= 2 ? 'medium' : 'low';
+
+        const getClass = v => v >= 4 ? 'very-high' : v >= 3 ? 'high' : v >= 2 ? 'medium' : 'low';
         document.getElementById('hazardCards').innerHTML = `
             <div class="hazard-card"><h4>🌊 سیل</h4><div class="score ${getClass(fScore)}">${fScore.toFixed(1)}</div></div>
             <div class="hazard-card"><h4>🌍 زلزله</h4><div class="score ${getClass(eScore)}">${eScore.toFixed(1)}</div></div>
@@ -780,117 +661,42 @@ async function analyzeAll() {
             <div class="hazard-card"><h4>✈️ هوانوردی</h4><div class="score ${getClass(avScore)}">${avScore.toFixed(1)}</div></div>
         `;
 
-        drawRadarChart(scores);
-        drawBarChart(scores);
-        if (climate) {
-            drawPrecipChart(climate.precip.monthly);
-            drawWindChart(climate.wind.monthly);
-            drawTempChart(climate.temp.monthly);
-        }
+        drawRadarChart(scores); drawBarChart(scores);
+        if (climate) { drawPrecipChart(climate.precip.monthly); drawWindChart(climate.wind.monthly); drawTempChart(climate.temp.monthly); }
 
         let html = '<h3>📋 جزئیات تحلیل</h3>';
-        
         html += `<h4>🌊 سیل</h4><ul>`;
         if (climate) html += `<li>بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li><li>PCI: ${climate.precip.pci.toFixed(1)}</li>`;
-        
-        if (discharge) {
-            html += `<li>دبی GloFAS: ${discharge.current.toFixed(1)} m³/s</li>`;
-        } else {
-            let fallbackMsg = `⚠️ داده دبی GloFAS برای این نقطه معتبر نیست.`;
-            if (river && river.found && river.distance < 1000) {
-                const riverName = (river.name && river.name !== 'بدون نام') ? river.name : 'رودخانه';
-                fallbackMsg += ` با توجه به فاصله بسیار کم تا ${riverName} (${river.distanceText})، ریسک سیل بالا است. لطفاً از داده‌های ایستگاه هیدرومتری محلی استفاده کنید.`;
-            }
-            html += `<li style="color: #dd6b20;">${fallbackMsg}</li>`;
-        }
-        
+        if (discharge) html += `<li>دبی GloFAS: ${discharge.current.toFixed(1)} m³/s</li>`; else html += `<li style="color: #dd6b20;">⚠️ داده دبی معتبر نیست.</li>`;
         if (ndvi) html += `<li>NDVI: ${ndvi.avg.toFixed(3)}</li>`;
         if (landCover) html += `<li>کاربری اراضی: ${landCover.name}</li>`;
-        
-        if (river && river.found) {
-            const riverName = (river.name && river.name !== 'بدون نام') ? river.name : 'رودخانه بدون نام';
-            html += `<li>فاصله از رودخانه: ${river.distanceText} (تا ${riverName})</li>`;
-        }
-        
+        if (river && river.found) html += `<li>فاصله از رودخانه: ${river.distanceText}</li>`;
         if (recentPrecip) html += `<li>بارش ۱۰ روز اخیر: ${recentPrecip.avg.toFixed(2)} mm</li>`;
         html += `</ul>`;
 
-        html += `<h4>🌍 زلزله</h4>`;
-        html += `<ul>
-                    <li>فاصله تا گسل: ${eqData.faultDistance} km</li>
-                    <li>Vs30: ${vs30} m/s</li>
-                 </ul>`;
-                 
-        if (eqData.recentQuakes.length > 0) {
-            const maxMagRecent = Math.max(...eqData.recentQuakes.map(q => q.mag));
-            html += `<table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
-                     <thead>
-                         <tr style="background-color: #edf2f7;">
-                             <th style="border: 1px solid #cbd5e0; padding: 5px;">تاریخ</th>
-                             <th style="border: 1px solid #cbd5e0; padding: 5px;">بزرگا (ریشتر)</th>
-                             <th style="border: 1px solid #cbd5e0; padding: 5px;">فاصله (km)</th>
-                         </tr>
-                     </thead>
-                     <tbody>`;
-            eqData.recentQuakes.forEach(q => {
-                const isMax = (q.mag === maxMagRecent);
-                const rowStyle = isMax ? 'background-color: #fed7d7; font-weight: bold; color: #c53030;' : '';
-                html += `<tr style="${rowStyle}">
-                            <td style="border: 1px solid #cbd5e0; padding: 5px; text-align: center;">${q.date}</td>
-                            <td style="border: 1px solid #cbd5e0; padding: 5px; text-align: center;">${q.mag.toFixed(1)}</td>
-                            <td style="border: 1px solid #cbd5e0; padding: 5px; text-align: center;">${q.dist.toFixed(1)}</td>
-                         </tr>`;
-            });
-            html += `</tbody></table>`;
-        }
+        html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance} km</li><li>Vs30: ${vs30} m/s</li></ul>`;
 
-        html += `<h4>🏔️ توپوگرافی</h4><ul>
-                    <li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>
-                    <li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li>
-                 </ul>`;
+        html += `<h4>🏔️ توپوگرافی</h4><ul><li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li><li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li></ul>`;
 
         html += `<h4>📉 فرونشست زمین</h4><ul><li>${subsidenceText}</li></ul>`;
 
-        // بخش طوفان و دما
-        html += `<h4>🌪️ طوفان و 🌡️ دما</h4>`;
-        html += `<ul>`;
-        if (climate) {
-            html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li>`;
-            html += `<li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`;
-        } else {
-            html += `<li style="color: #dd6b20;">⚠️ داده‌های دما و باد در دسترس نیست.</li>`;
-        }
+        html += `<h4>🌪️ طوفان و 🌡️ دما</h4><ul>`;
+        if (climate) { html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li><li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`; } else { html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`; }
         html += `</ul>`;
 
-        // بخش صاعقه
-        html += `<h4>⚡ صاعقه</h4>`;
-        html += `<ul>`;
+        html += `<h4>⚡ صاعقه</h4><ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            
-            if (typeof capeData !== 'undefined' && capeData !== null && capeData > 0) {
-                html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
-            } else {
-                html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
-            }
-
+            if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`; else html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             const elevImpact = autoElevation > 2000 ? '۱ امتیاز' : (autoElevation > 1000 ? '۰.۵ امتیاز' : 'بدون تأثیر');
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر (تأثیر: ${elevImpact})</li>`;
-
             const buildingImpact = buildingHeight > 30 ? '۱ امتیاز' : (buildingHeight > 10 ? '۰.۵ امتیاز' : 'بدون تأثیر');
             html += `<li>ارتفاع سازه: ${buildingHeight} متر (تأثیر: ${buildingImpact})</li>`;
+        } else { html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`; }
+        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li></ul>`;
 
-        } else {
-            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
-        }
-        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-        html += `</ul>`;                   
-
-        // بخش هوانوردی
-        html += `<h4>✈️ خطر هوانوردی</h4>`;
-        html += `<ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
-
-               document.getElementById('paramDetails').innerHTML = html;
+        html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
+        document.getElementById('paramDetails').innerHTML = html;
 
         generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
         document.getElementById('result').classList.add('show');
