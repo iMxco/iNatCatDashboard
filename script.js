@@ -16,21 +16,26 @@ let airwaysCache = null;
 // راه‌اندازی نقشه
 // ============================================================
 function initMap() {
-    // ۱. خواندن مختصات از URL (اگر وجود داشته باشد)
     const urlParams = new URLSearchParams(window.location.search);
     let initialLat = parseFloat(urlParams.get('lat')) || parseFloat(document.getElementById('lat').value) || 35.6892;
     let initialLon = parseFloat(urlParams.get('lon')) || parseFloat(document.getElementById('lon').value) || 51.3890;
 
-    // تنظیم مقادیر در فیلدهای ورودی
     document.getElementById('lat').value = initialLat.toFixed(4);
     document.getElementById('lon').value = initialLon.toFixed(4);
 
-    // ایجاد نقشه
     map = L.map('map').setView([initialLat, initialLon], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
 
-    // 🌟 نمایش اولیه مارکر روی نقشه (این خط جا افتاده بود)
-    updateMarker(initialLat, initialLon);
+    // 🌟 ساخت مستقیم مارکر اولیه (بدون فراخوانی updateMarker)
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([initialLat, initialLon], { draggable: true }).addTo(map);
+    
+    marker.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        document.getElementById('lat').value = pos.lat.toFixed(4);
+        document.getElementById('lon').value = pos.lng.toFixed(4);
+        updateURL(pos.lat.toFixed(4), pos.lng.toFixed(4));
+    });
 
     // ۲. رویداد کلیک روی نقشه
     map.on('click', function(e) {
@@ -40,10 +45,16 @@ function initMap() {
         document.getElementById('lat').value = lat;
         document.getElementById('lon').value = lon;
         
-        // جابه‌جایی مارکر
-        updateMarker(parseFloat(lat), parseFloat(lon));
+        // جابه‌جایی مارکر با کلیک
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+        marker.on('dragend', function(e) {
+            const pos = e.target.getLatLng();
+            document.getElementById('lat').value = pos.lat.toFixed(4);
+            document.getElementById('lon').value = pos.lng.toFixed(4);
+            updateURL(pos.lat.toFixed(4), pos.lng.toFixed(4));
+        });
         
-        // به‌روزرسانی آدرس سایت
         updateURL(lat, lon);
     });
 
