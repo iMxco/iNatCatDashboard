@@ -25,23 +25,25 @@ function initMap() {
     document.getElementById('lat').value = initialLat.toFixed(4);
     document.getElementById('lon').value = initialLon.toFixed(4);
 
+    // ایجاد نقشه
     map = L.map('map').setView([initialLat, initialLon], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
+
+    // 🌟 نمایش اولیه مارکر روی نقشه (این خط جا افتاده بود)
     updateMarker(initialLat, initialLon);
 
     // ۲. رویداد کلیک روی نقشه
-       map.on('click', function(e) {
+    map.on('click', function(e) {
         const lat = e.latlng.lat.toFixed(4);
         const lon = e.latlng.lng.toFixed(4);
         
-        // ۱. ثبت مختصات در فیلدهای ورودی
         document.getElementById('lat').value = lat;
         document.getElementById('lon').value = lon;
         
-        // ۲. جابه‌جایی نشانگر (Marker) روی نقشه
+        // جابه‌جایی مارکر
         updateMarker(parseFloat(lat), parseFloat(lon));
         
-        // ۳. به‌روزرسانی آدرس سایت
+        // به‌روزرسانی آدرس سایت
         updateURL(lat, lon);
     });
 
