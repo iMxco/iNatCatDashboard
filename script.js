@@ -16,49 +16,41 @@ let airwaysCache = null;
 // راه‌اندازی نقشه
 // ============================================================
 function initMap() {
-    const initialLat = parseFloat(document.getElementById('lat').value) || 35.6892;
-    const initialLon = parseFloat(document.getElementById('lon').value) || 51.3890;
+    // ۱. خواندن مختصات از URL (اگر وجود داشته باشد)
+    const urlParams = new URLSearchParams(window.location.search);
+    let initialLat = parseFloat(urlParams.get('lat')) || parseFloat(document.getElementById('lat').value) || 35.6892;
+    let initialLon = parseFloat(urlParams.get('lon')) || parseFloat(document.getElementById('lon').value) || 51.3890;
+
+    // تنظیم مقادیر در فیلدهای ورودی
+    document.getElementById('lat').value = initialLat.toFixed(4);
+    document.getElementById('lon').value = initialLon.toFixed(4);
 
     map = L.map('map').setView([initialLat, initialLon], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
-
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 19 }).addTo(map);
     updateMarker(initialLat, initialLon);
 
+    // ۲. رویداد کلیک روی نقشه
     map.on('click', function(e) {
         const lat = e.latlng.lat.toFixed(4);
         const lon = e.latlng.lng.toFixed(4);
         document.getElementById('lat').value = lat;
         document.getElementById('lon').value = lon;
         updateMarker(parseFloat(lat), parseFloat(lon));
+        
+        // به‌روزرسانی آدرس سایت
+        updateURL(lat, lon);
     });
 
-    document.getElementById('lat').addEventListener('change', syncMapWithInputs);
-    document.getElementById('lon').addEventListener('change', syncMapWithInputs);
-}
-
-function syncMapWithInputs() {
-    const lat = parseFloat(document.getElementById('lat').value);
-    const lon = parseFloat(document.getElementById('lon').value);
-    if (!isNaN(lat) && !isNaN(lon) && map) {
-        map.setView([lat, lon], 14);
-        updateMarker(lat, lon);
-    }
-}
-
-function updateMarker(lat, lon) {
-    if (!map) return;
-    if (marker) map.removeLayer(marker);
-    marker = L.marker([lat, lon], { draggable: true }).addTo(map);
-    marker.on('dragend', function(e) {
-        const pos = e.target.getLatLng();
-        document.getElementById('lat').value = pos.lat.toFixed(4);
-        document.getElementById('lon').value = pos.lng.toFixed(4);
+    // ۳. به‌روزرسانی آدرس هنگام تغییر دستی مختصات
+    document.getElementById('lat').addEventListener('change', function() {
+        syncMapWithInputs();
+        updateURL(this.value, document.getElementById('lon').value);
+    });
+    document.getElementById('lon').addEventListener('change', function() {
+        syncMapWithInputs();
+        updateURL(document.getElementById('lat').value, this.value);
     });
 }
-
 // ============================================================
 // مدیریت توکن
 // ============================================================
@@ -1039,6 +1031,39 @@ async function downloadPDF() {
 // ============================================================
 // راه‌اندازی
 // ============================================================
+function updateURL(lat, lon) {
+    if (!lat || !lon) return;
+    const newUrl = `${window.location.pathname}?lat=${lat}&lon=${lon}`;
+    window.history.replaceState({ path: newUrl }, '', newUrl);
+}
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude.toFixed(4);
+                const lon = position.coords.longitude.toFixed(4);
+                
+                document.getElementById('lat').value = lat;
+                document.getElementById('lon').value = lon;
+                
+                if (map) {
+                    map.setView([lat, lon], 15);
+                    updateMarker(parseFloat(lat), parseFloat(lon));
+                }
+                
+                updateURL(lat, lon);
+                alert('موقعیت شما با موفقیت دریافت شد.');
+            },
+            function(error) {
+                alert('خطا در دریافت موقعیت: ' + error.message + '\nلطفاً دسترسی به GPS را بررسی کنید.');
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    } else {
+        alert('مرورگر شما از GPS پشتیبانی نمی‌کند.');
+    }
+}
 window.addEventListener('DOMContentLoaded', function() {
     loadToken();
     initMap();
