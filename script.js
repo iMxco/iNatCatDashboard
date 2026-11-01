@@ -215,69 +215,23 @@ async function getPrecipitation(lat, lon) {
 }
 
 async function getCapeData(lat, lon) {
-
-async function getClimateData(lat, lon) {
-    const now = new Date();
-    const endYear = now.getFullYear() - 1;
-    const startYear = endYear - 19;
-    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum,temperature_2m_mean,wind_speed_10m_mean&wind_speed_unit=kmh&timezone=auto`;
-    
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=cape&forecast_days=7&timezone=auto`;
     try {
         const res = await fetch(url);
         if (!res.ok) return null;
         const data = await res.json();
-        if (!data.daily) return null;
+        if (!data.hourly || !data.hourly.cape) return null;
         
-        const precip = data.daily.precipitation_sum;
-        const temp = data.daily.temperature_2m_mean;
-        const wind = data.daily.wind_speed_10m_mean; 
-        
-        const monthlyPrecip = Array(12).fill(0);
-        const monthlyTemp = Array(12).fill(0);
-        const monthlyWind = Array(12).fill(0);
-        const counts = Array(12).fill(0);
-        const yearlyTotals = {};
-
-        data.daily.time.forEach((t, i) => {
-            const date = new Date(t);
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            
-            if (precip[i] !== null) {
-                if (!yearlyTotals[year]) yearlyTotals[year] = Array(12).fill(0);
-                yearlyTotals[year][month] += precip[i];
+        let total = 0, count = 0;
+        data.hourly.cape.forEach(val => {
+            if (val !== null && val !== undefined) {
+                total += val;
+                count++;
             }
-            if (temp[i] !== null) { monthlyTemp[month] += temp[i]; counts[month]++; }
-            if (wind[i] !== null) { monthlyWind[month] += wind[i]; }
         });
-
-        const years = Object.keys(yearlyTotals);
-        const avgMonthlyPrecip = Array(12).fill(0);
-        years.forEach(y => { for(let m=0; m<12; m++) avgMonthlyPrecip[m] += yearlyTotals[y][m]; });
-        for(let m=0; m<12; m++) avgMonthlyPrecip[m] /= years.length;
-        
-        const annualPrecipAvg = avgMonthlyPrecip.reduce((a, b) => a + b, 0);
-        const sumSq = avgMonthlyPrecip.reduce((a, b) => a + b*b, 0);
-        const pci = annualPrecipAvg > 0 ? (sumSq / (annualPrecipAvg * annualPrecipAvg)) * 100 : 0;
-
-        for(let m=0; m<12; m++) if(counts[m]>0) monthlyTemp[m] /= counts[m];
-        const annualTempAvg = monthlyTemp.reduce((a,b)=>a+b,0) / 12;
-
-        const avgDaysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        for(let m=0; m<12; m++) monthlyWind[m] /= (years.length * avgDaysInMonth[m]);
-
-        const annualWindAvgKmh = monthlyWind.reduce((a,b)=>a+b,0) / 12;
-        const windiestMonthIndex = monthlyWind.indexOf(Math.max(...monthlyWind));
-
-        const monthOrder = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1];
-        return {
-            precip: { monthly: monthOrder.map(m=>avgMonthlyPrecip[m]), annualAvg: annualPrecipAvg, pci: pci },
-            temp: { monthly: monthOrder.map(m=>monthlyTemp[m]), annualAvg: annualTempAvg },
-            wind: { monthly: monthOrder.map(m=>monthlyWind[m]), annualAvg: annualWindAvgKmh, windiestMonth: MONTH_NAMES_FA[monthOrder.indexOf(windiestMonthIndex)] }
-        };
+        return count > 0 ? (total / count) : 0;
     } catch (e) { return null; }
 }
-
 async function estimateSlope(lat, lon) {
     const delta = 0.01;
     const points = [{ lat: lat + delta, lon: lon }, { lat: lat - delta, lon: lon }, { lat: lat, lon: lon + delta }, { lat: lat, lon: lon - delta }];
@@ -813,17 +767,18 @@ async function analyzeAll() {
         html += `</ul>`;
 
         // بخش صاعقه
-        html += `<h4>⚡ صاعقه</h4>`;
+                html += `<h4>⚡ صاعقه</h4>`;
         html += `<ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            if (typeof capeData !== 'undefined' && capeData !== null && capeData > 0) {
+            
+            if (capeData !== null && capeData !== undefined) {
                 html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
-                html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده است.</li>`;
+                html += `<li>انرژی همرفتی (CAPE): خطا در دریافت</li>`;
             }
         } else {
-            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
         html += `</ul>`;
