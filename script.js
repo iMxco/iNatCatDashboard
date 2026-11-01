@@ -30,14 +30,18 @@ function initMap() {
     updateMarker(initialLat, initialLon);
 
     // ۲. رویداد کلیک روی نقشه
-    map.on('click', function(e) {
+       map.on('click', function(e) {
         const lat = e.latlng.lat.toFixed(4);
         const lon = e.latlng.lng.toFixed(4);
+        
+        // ۱. ثبت مختصات در فیلدهای ورودی
         document.getElementById('lat').value = lat;
         document.getElementById('lon').value = lon;
+        
+        // ۲. جابه‌جایی نشانگر (Marker) روی نقشه
         updateMarker(parseFloat(lat), parseFloat(lon));
         
-        // به‌روزرسانی آدرس سایت
+        // ۳. به‌روزرسانی آدرس سایت
         updateURL(lat, lon);
     });
 
