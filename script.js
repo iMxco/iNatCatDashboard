@@ -15,6 +15,17 @@ let airwaysCache = null;
 // ============================================================
 // راه‌اندازی نقشه
 // ============================================================
+function updateMarker(lat, lon) {
+    if (!map) return;
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+    marker.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        document.getElementById('lat').value = pos.lat.toFixed(4);
+        document.getElementById('lon').value = pos.lng.toFixed(4);
+        updateURL(pos.lat.toFixed(4), pos.lng.toFixed(4));
+    });
+}
 function initMap() {
     const urlParams = new URLSearchParams(window.location.search);
     let initialLat = parseFloat(urlParams.get('lat')) || parseFloat(document.getElementById('lat').value) || 35.6892;
