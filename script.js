@@ -894,12 +894,12 @@ async function analyzeAll() {
 
         generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
         document.getElementById('result').classList.add('show');
-            }
-    } catch (e) {
+        } catch (e) {
         console.error(e);
         alert('خطا در تحلیل: ' + e.message);
         document.getElementById('loading').style.display = 'none';
     }
+}
 }
 // ============================================================
 // نمودارها
