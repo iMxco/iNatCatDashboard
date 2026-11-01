@@ -718,6 +718,31 @@ async function analyzeAll() {
 
             // 🌟 تأثیر ارتفاع سازه (استاندارد IEC 62305)
             if (buildingHeight > 30) {
+                       // خواندن ارتفاع سازه از فیلد ورودی
+        const buildingHeight = parseFloat(document.getElementById('buildingHeight').value) || 0;
+
+        let lScore = 1;
+        if (climate) {
+            if (climate.precip.annualAvg > 700) lScore = 3;
+            else if (climate.precip.annualAvg > 300) lScore = 2;
+
+            if (typeof capeData !== 'undefined' && capeData !== null) {
+                if (capeData > 2000) lScore += 2;
+                else if (capeData > 1000) lScore += 1;
+                
+                if (capeData > 1000 && climate.precip.annualAvg < 100) {
+                    lScore -= 0.5; 
+                }
+            }
+
+            // 🌟 تأثیر ارتفاع از سطح دریا (با استفاده از autoElevation)
+            if (typeof autoElevation !== 'undefined' && autoElevation !== null) {
+                if (autoElevation > 2000) lScore += 1;
+                else if (autoElevation > 1000) lScore += 0.5;
+            }
+
+            // 🌟 تأثیر ارتفاع سازه (استاندارد IEC 62305)
+            if (buildingHeight > 30) {
                 lScore += 1;
             } else if (buildingHeight > 10) {
                 lScore += 0.5;
@@ -838,31 +863,28 @@ async function analyzeAll() {
         html += `</ul>`;
 
         // بخش صاعقه
-                       // بخش صاعقه
         html += `<h4>⚡ صاعقه</h4>`;
         html += `<ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
             
-            if (capeData !== null && capeData !== undefined) {
+            if (typeof capeData !== 'undefined' && capeData !== null && capeData > 0) {
                 html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
                 html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             }
 
-            // نمایش تأثیر ارتفاع از سطح دریا
             const elevImpact = autoElevation > 2000 ? '۱ امتیاز' : (autoElevation > 1000 ? '۰.۵ امتیاز' : 'بدون تأثیر');
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر (تأثیر: ${elevImpact})</li>`;
 
-            // نمایش تأثیر ارتفاع سازه
             const buildingImpact = buildingHeight > 30 ? '۱ امتیاز' : (buildingHeight > 10 ? '۰.۵ امتیاز' : 'بدون تأثیر');
             html += `<li>ارتفاع سازه: ${buildingHeight} متر (تأثیر: ${buildingImpact})</li>`;
 
         } else {
-            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-        html += `</ul>`;
+        html += `</ul>`;                   
 
         // بخش هوانوردی
         html += `<h4>✈️ خطر هوانوردی</h4>`;
