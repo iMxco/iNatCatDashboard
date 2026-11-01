@@ -894,7 +894,7 @@ async function analyzeAll() {
 
         generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
         document.getElementById('result').classList.add('show');
-
+            }
     } catch (e) {
         console.error(e);
         alert('خطا در تحلیل: ' + e.message);
