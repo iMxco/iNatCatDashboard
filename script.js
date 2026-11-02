@@ -637,6 +637,15 @@ function haversine(lat1, lon1, lat2, lon2) {
 // ============================================================
 // تحلیل و امتیازدهی یکپارچه
 // ============================================================
+async function getForecastData(lat, lon) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=precipitation_sum,wind_speed_10m_max,temperature_2m_max,temperature_2m_min,snowfall_sum,weather_code&forecast_days=3&timezone=auto`;
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.daily;
+    } catch (e) { return null; }
+}
 async function analyzeAll() {
     const lat = parseFloat(document.getElementById('lat').value), lon = parseFloat(document.getElementById('lon').value);
     if (isNaN(lat) || isNaN(lon)) return alert('مختصات معتبر وارد کنید');
@@ -646,9 +655,21 @@ async function analyzeAll() {
     const token = getToken();
 
     try {
-        const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData] = await Promise.all([
-            getElevation(lat, lon), estimateSlope(lat, lon), getClimateData(lat, lon), getPrecipitation(lat, lon), getFloodDischarge(lat, lon), getNDVI(lat, lon, token), getLandCover(lat, lon, token), getRiverDistance(lat, lon), getEarthquakeData(lat, lon), getSubsidenceData(lat, lon), getAviationRisk(lat, lon), getCapeData(lat, lon)
-        ]);
+        const [autoElevation, slopeData, climate, recentPrecip, discharge, ndvi, landCover, river, eqData, subsidenceData, aviationData, capeData, forecastData] = await Promise.all([
+    getElevation(lat, lon),
+    estimateSlope(lat, lon),
+    getClimateData(lat, lon),
+    getPrecipitation(lat, lon),
+    getFloodDischarge(lat, lon),
+    getNDVI(lat, lon, token),
+    getLandCover(lat, lon, token),
+    getRiverDistance(lat, lon),
+    getEarthquakeData(lat, lon),
+    getSubsidenceData(lat, lon),
+    getAviationRisk(lat, lon),
+    getCapeData(lat, lon),
+    getForecastData(lat, lon) // 🌟 مورد جدید
+]);
 
         document.getElementById('loading').style.display = 'none';
         if (autoElevation === null) { alert("خطا در دریافت ارتفاع"); return; }
@@ -724,6 +745,55 @@ async function analyzeAll() {
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li></ul>`;
 
         html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
+                // 🌟 بخش هشدارهای پیش‌بینی
+        html += `<h4>🚨 هشدارهای پیش‌بینی (۳ روز آینده)</h4>`;
+        html += `<ul>`;
+        if (forecastData) {
+            let hasAlert = false;
+            const maxPrecip = Math.max(...forecastData.precipitation_sum);
+            const maxWind = Math.max(...forecastData.wind_speed_10m_max);
+            const maxTemp = Math.max(...forecastData.temperature_2m_max);
+            const minTemp = Math.min(...forecastData.temperature_2m_min);
+            const totalSnow = forecastData.snowfall_sum.reduce((a, b) => a + (b || 0), 0);
+            const hasThunder = forecastData.weather_code.some(c => c >= 95);
+
+            if (maxPrecip > 50) {
+                html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار سیل: پیش‌بینی بارش ${maxPrecip.toFixed(1)} میلی‌متر!</li>`;
+                hasAlert = true;
+            } else if (maxPrecip > 20) {
+                html += `<li style="color: #dd6b20;">🌧️ بارش قابل توجه: ${maxPrecip.toFixed(1)} میلی‌متر.</li>`;
+                hasAlert = true;
+            }
+
+            if (maxWind > 60) {
+                html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار طوفان: سرعت باد تا ${maxWind.toFixed(1)} km/h!</li>`;
+                hasAlert = true;
+            }
+
+            if (maxTemp > 40) {
+                html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار گرمای شدید: دما تا ${maxTemp.toFixed(1)} درجه!</li>`;
+                hasAlert = true;
+            }
+            if (minTemp < 0) {
+                html += `<li style="color: #3182ce;">❄️ هشدار یخبندان: دمای حداقل ${minTemp.toFixed(1)} درجه!</li>`;
+                hasAlert = true;
+            }
+            if (totalSnow > 5) {
+                html += `<li style="color: #3182ce;">⛄ هشدار بارش برف: مجموع ${totalSnow.toFixed(1)} سانتی‌متر!</li>`;
+                hasAlert = true;
+            }
+            if (hasThunder) {
+                html += `<li style="color: #805ad5;">⚡ احتمال رعد و برق در ۳ روز آینده!</li>`;
+                hasAlert = true;
+            }
+
+            if (!hasAlert) {
+                html += `<li style="color: #38a169;">✅ وضعیت جوی پیش‌رو در سطح ایمن است.</li>`;
+            }
+        } else {
+            html += `<li>⚠️ داده‌های پیش‌بینی در دسترس نیست.</li>`;
+        }
+        html += `</ul>`;
         document.getElementById('paramDetails').innerHTML = html;
 
         generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
