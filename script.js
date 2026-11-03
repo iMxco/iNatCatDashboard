@@ -764,10 +764,8 @@ async function analyzeAll() {
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
             if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`; else html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
-            const elevImpact = autoElevation > 2000 ? '۱ امتیاز' : (autoElevation > 1000 ? '۰.۵ امتیاز' : 'بدون تأثیر');
-            html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر (تأثیر: ${elevImpact})</li>`;
-            const buildingImpact = buildingHeight > 30 ? '۱ امتیاز' : (buildingHeight > 10 ? '۰.۵ امتیاز' : 'بدون تأثیر');
-            html += `<li>ارتفاع سازه: ${buildingHeight} متر (تأثیر: ${buildingImpact})</li>`;
+            html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
+            html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
         } else { html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`; }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li></ul>`;
 
