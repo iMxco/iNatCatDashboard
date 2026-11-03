@@ -686,6 +686,16 @@ async function analyzeAll() {
                 fScore += 0.25; // پوشش گیاهی ضعیف
             }
         }
+                // 🌟 تأثیر کاربری اراضی (Land Cover) بر خطر سیل
+        if (landCover && typeof landCover.floodScore !== 'undefined') {
+            if (landCover.floodScore >= 9) {
+                fScore += 1;    // زمین شهری یا پهنه آبی (بیشترین رواناب)
+            } else if (landCover.floodScore >= 7) {
+                fScore += 0.5;  // زمین زراعی
+            } else if (landCover.floodScore <= 2) {
+                fScore -= 0.5;  // جنگل (جذب آب بالا)
+            }
+        }
         fScore = Math.min(5, fScore);
 
         let eScore = 1; if (eqData.maxMag >= 6) eScore = 4; else if (eqData.maxMag >= 5) eScore = 3; else if (eqData.maxMag >= 4) eScore = 2; if (eqData.faultDistance < 20) eScore += 0.5; if (vs30 < 300) eScore += 0.5; eScore = Math.min(5, eScore);
