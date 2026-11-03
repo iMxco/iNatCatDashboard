@@ -677,7 +677,16 @@ async function analyzeAll() {
         const slopePercent = slopeData ? slopeData.slopePercent : null; 
         const vs30 = await getVs30Estimate(slopePercent);
 
-        let fScore = 1; if (climate) { if (climate.precip.annualAvg > 700) fScore = 4; else if (climate.precip.annualAvg > 500) fScore = 3; else if (climate.precip.annualAvg > 300) fScore = 2; if (climate.precip.pci > 25) fScore += 0.5; } if (discharge && discharge.ratio > 2) fScore += 0.5; if (river && river.found && river.distance < 500) fScore += 0.5; fScore = Math.min(5, fScore);
+        let fScore = 1; if (climate) { if (climate.precip.annualAvg > 700) fScore = 4; else if (climate.precip.annualAvg > 500) fScore = 3; else if (climate.precip.annualAvg > 300) fScore = 2; if (climate.precip.pci > 25) fScore += 0.5; } if (discharge && discharge.ratio > 2) fScore += 0.5; if (river && river.found && river.distance < 500) fScore += 0.5;
+                // 🌟 تأثیر پوشش گیاهی (NDVI) بر خطر سیل
+        if (ndvi && typeof ndvi.avg !== 'undefined') {
+            if (ndvi.avg < 0.1) {
+                fScore += 0.5; // زمین بایر یا شهری
+            } else if (ndvi.avg < 0.2) {
+                fScore += 0.25; // پوشش گیاهی ضعیف
+            }
+        }
+        fScore = Math.min(5, fScore);
 
         let eScore = 1; if (eqData.maxMag >= 6) eScore = 4; else if (eqData.maxMag >= 5) eScore = 3; else if (eqData.maxMag >= 4) eScore = 2; if (eqData.faultDistance < 20) eScore += 0.5; if (vs30 < 300) eScore += 0.5; eScore = Math.min(5, eScore);
 
