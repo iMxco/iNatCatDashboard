@@ -696,6 +696,14 @@ async function analyzeAll() {
                 fScore -= 0.5;  // جنگل (جذب آب بالا)
             }
         }
+                // 🌟 تأثیر بارش ۱۰ روز اخیر (رطوبت پیشین خاک) بر خطر سیل
+        if (recentPrecip) {
+            if (recentPrecip.avg > 10) {
+                fScore += 0.5; // زمین اشباع شده است
+            } else if (recentPrecip.avg > 5) {
+                fScore += 0.25; // تا حدی مرطوب
+            }
+        }
         fScore = Math.min(5, fScore);
 
         let eScore = 1; if (eqData.maxMag >= 6) eScore = 4; else if (eqData.maxMag >= 5) eScore = 3; else if (eqData.maxMag >= 4) eScore = 2; if (eqData.faultDistance < 20) eScore += 0.5; if (vs30 < 300) eScore += 0.5; eScore = Math.min(5, eScore);
