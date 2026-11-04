@@ -810,14 +810,20 @@ async function analyzeAll() {
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
             if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
-                    if (lightningDensity !== null) {
-                            if (lightningDensity !== null) {
-            const annualDensity = lightningDensity * 365; // تبدیل به واحد سالانه
+            
+            if (lightningDensity !== null) {
+            const annualDensity = lightningDensity * 365;
             html += `<li>چگالی آذرخش (سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
+        } else {
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
-    } else {
-        html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
-    }
+    } // بستن بلاک if (climate)
+
+    html += `<li>انرژی همرفتی (CAPE): ${typeof capeData !== 'undefined' && capeData !== null ? capeData.toFixed(0) + ' J/kg' : 'داده‌ای ثبت نشده'}</li>`;
+    html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
+    html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
+    html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
+    html += `</ul>`;
 
     // 🌟 نمایش نقشه توزیع مکانی آذرخش
     html += `<div style="text-align: center; margin-top: 15px;">`;
