@@ -811,7 +811,7 @@ async function analyzeAll() {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
             if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             
-                    // بخش صاعقه
+                     // بخش صاعقه
         html += `<h4>⚡ صاعقه</h4>`;
         html += `<ul>`;
         if (climate) {
@@ -831,11 +831,16 @@ async function analyzeAll() {
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
             html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
         } else {
-            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
         }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
         html += `</ul>`;
 
+        // 🌟 نمایش نقشه توزیع مکانی آذرخش
+        html += `<div style="text-align: center; margin-top: 15px;">`;
+        html += `<img src="lightning-map.png" alt="نقشه توزیع آذرخش ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p>`;
+        html += `</div>`;
      
     // 🌟 نمایش نقشه توزیع مکانی آذرخش
     html += `<div style="text-align: center; margin-top: 15px;">`;
