@@ -897,6 +897,7 @@ async function analyzeAll() {
         } else {
             html += `<li>⚠️ داده‌های پیش‌بینی در دسترس نیست.</li>`;
         }
+        )
         html += `</ul>`;
         document.getElementById('paramDetails').innerHTML = html;
 
