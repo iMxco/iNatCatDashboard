@@ -785,74 +785,101 @@ async function analyzeAll() {
         drawRadarChart(scores); drawBarChart(scores);
         if (climate) { drawPrecipChart(climate.precip.monthly); drawWindChart(climate.wind.monthly); drawTempChart(climate.temp.monthly); }
 
-        let html = '<h3>📋 جزئیات تحلیل</h3>';
+               let html = '<h3>📋 جزئیات تحلیل</h3>';
+        
+        // --- سیل ---
         html += `<h4>🌊 سیل</h4><ul>`;
         if (climate) html += `<li>بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li><li>PCI: ${climate.precip.pci.toFixed(1)}</li>`;
-        if (climate) html += `<li>نوع اقلیم: ${climateType}</li>`;
-        if (discharge) html += `<li>دبی GloFAS: ${discharge.current.toFixed(1)} m³/s</li>`; else html += `<li style="color: #dd6b20;">⚠️ داده دبی معتبر نیست.</li>`;
+        if (discharge) {
+            html += `<li>دبی GloFAS: ${discharge.current.toFixed(1)} m³/s</li>`;
+        } else {
+            let fallbackMsg = `⚠️ داده دبی GloFAS برای این نقطه معتبر نیست.`;
+            if (river && river.found && river.distance < 1000) {
+                const riverName = (river.name && river.name !== 'بدون نام') ? river.name : 'رودخانه';
+                fallbackMsg += ` با توجه به فاصله بسیار کم تا ${riverName} (${river.distanceText})، ریسک سیل بالا است.`;
+            }
+            html += `<li style="color: #dd6b20;">${fallbackMsg}</li>`;
+        }
         if (ndvi) html += `<li>NDVI: ${ndvi.avg.toFixed(3)}</li>`;
         if (landCover) html += `<li>کاربری اراضی: ${landCover.name}</li>`;
-        if (river && river.found) html += `<li>فاصله از رودخانه: ${river.distanceText}</li>`;
+        if (river && river.found) {
+            const riverName = (river.name && river.name !== 'بدون نام') ? river.name : 'رودخانه بدون نام';
+            html += `<li>فاصله از رودخانه: ${river.distanceText} (تا ${riverName})</li>`;
+        }
         if (recentPrecip) html += `<li>بارش ۱۰ روز اخیر: ${recentPrecip.avg.toFixed(2)} mm</li>`;
         html += `</ul>`;
 
-        html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance} km</li><li>Vs30: ${vs30} m/s</li></ul>`;
+        // --- زلزله ---
+        html += `<h4>🌍 زلزله</h4>`;
+        html += `<ul><li>فاصله تا گسل: ${eqData.faultDistance} km</li><li>Vs30: ${vs30} m/s</li></ul>`;
+        if (eqData.recentQuakes.length > 0) {
+            const maxMagRecent = Math.max(...eqData.recentQuakes.map(q => q.mag));
+            html += `<table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
+                     <thead><tr style="background-color: #edf2f7;">
+                         <th style="border: 1px solid #cbd5e0; padding: 5px;">تاریخ</th>
+                         <th style="border: 1px solid #cbd5e0; padding: 5px;">بزرگا</th>
+                         <th style="border: 1px solid #cbd5e0; padding: 5px;">فاصله (km)</th>
+                     </tr></thead><tbody>`;
+            eqData.recentQuakes.forEach(q => {
+                const isMax = (q.mag === maxMagRecent);
+                const rowStyle = isMax ? 'background-color: #fed7d7; font-weight: bold; color: #c53030;' : '';
+                html += `<tr style="${rowStyle}">
+                            <td style="border: 1px solid #cbd5e0; padding: 5px; text-align: center;">${q.date}</td>
+                            <td style="border: 1px solid #cbd5e0; padding: 5px; text-align: center;">${q.mag.toFixed(1)}</td>
+                            <td style="border: 1px solid #cbd5e0; padding: 5px; text-align: center;">${q.dist.toFixed(1)}</td>
+                         </tr>`;
+            });
+            html += `</tbody></table>`;
+        }
 
-        html += `<h4>🏔️ توپوگرافی</h4><ul><li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li><li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li></ul>`;
+        // --- توپوگرافی ---
+        html += `<h4>🏔️ توپوگرافی</h4><ul>
+                    <li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>
+                    <li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li>
+                 </ul>`;
 
+        // --- فرونشست ---
         html += `<h4>📉 فرونشست زمین</h4><ul><li>${subsidenceText}</li></ul>`;
 
+        // --- طوفان و دما ---
         html += `<h4>🌪️ طوفان و 🌡️ دما</h4><ul>`;
-        if (climate) { html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li><li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`; } else { html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`; }
+        if (climate) {
+            html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li><li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`;
+        } else {
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
+        }
         html += `</ul>`;
 
+        // --- صاعقه ---
         html += `<h4>⚡ صاعقه</h4><ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
-            
-                     // بخش صاعقه
-        html += `<h4>⚡ صاعقه</h4>`;
-        html += `<ul>`;
-        if (climate) {
-            html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            
             if (typeof capeData !== 'undefined' && capeData !== null) {
                 html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
                 html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             }
-
             if (lightningDensity !== null) {
                 const annualDensity = lightningDensity * 365;
                 html += `<li>چگالی آذرخش (سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
             }
-
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
             html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
         } else {
-            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی برای این منطقه دریافت نشد.</li>`;
+            html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
-        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-        html += `</ul>`;
+        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li></ul>`;
 
-        // 🌟 نمایش نقشه توزیع مکانی آذرخش
+        // نقشه صاعقه
         html += `<div style="text-align: center; margin-top: 15px;">`;
         html += `<img src="lightning-map.png" alt="نقشه توزیع آذرخش ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
-        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p>`;
-        html += `</div>`;
-     
-    // 🌟 نمایش نقشه توزیع مکانی آذرخش
-    html += `<div style="text-align: center; margin-top: 15px;">`;
-    html += `<img src="lightning-map.png" alt="نقشه توزیع آذرخش ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
-    html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p>`;
-    html += `</div>`;
-        }
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p></div>`;
 
+        // --- هوانوردی ---
         html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
-                // 🌟 بخش هشدارهای پیش‌بینی
-        html += `<h4>🚨 هشدارهای پیش‌بینی (۳ روز آینده)</h4>`;
-        html += `<ul>`;
+
+        // --- هشدارهای پیش‌بینی ---
+        html += `<h4>🚨 هشدارهای پیش‌بینی (۳ روز آینده)</h4><ul>`;
         if (forecastData) {
             let hasAlert = false;
             const maxPrecip = Math.max(...forecastData.precipitation_sum);
@@ -862,44 +889,19 @@ async function analyzeAll() {
             const totalSnow = forecastData.snowfall_sum.reduce((a, b) => a + (b || 0), 0);
             const hasThunder = forecastData.weather_code.some(c => c >= 95);
 
-            if (maxPrecip > 50) {
-                html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار سیل: پیش‌بینی بارش ${maxPrecip.toFixed(1)} میلی‌متر!</li>`;
-                hasAlert = true;
-            } else if (maxPrecip > 20) {
-                html += `<li style="color: #dd6b20;">🌧️ بارش قابل توجه: ${maxPrecip.toFixed(1)} میلی‌متر.</li>`;
-                hasAlert = true;
-            }
-
-            if (maxWind > 60) {
-                html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار طوفان: سرعت باد تا ${maxWind.toFixed(1)} km/h!</li>`;
-                hasAlert = true;
-            }
-
-            if (maxTemp > 40) {
-                html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار گرمای شدید: دما تا ${maxTemp.toFixed(1)} درجه!</li>`;
-                hasAlert = true;
-            }
-            if (minTemp < 0) {
-                html += `<li style="color: #3182ce;">❄️ هشدار یخبندان: دمای حداقل ${minTemp.toFixed(1)} درجه!</li>`;
-                hasAlert = true;
-            }
-            if (totalSnow > 5) {
-                html += `<li style="color: #3182ce;">⛄ هشدار بارش برف: مجموع ${totalSnow.toFixed(1)} سانتی‌متر!</li>`;
-                hasAlert = true;
-            }
-            if (hasThunder) {
-                html += `<li style="color: #805ad5;">⚡ احتمال رعد و برق در ۳ روز آینده!</li>`;
-                hasAlert = true;
-            }
-
-            if (!hasAlert) {
-                html += `<li style="color: #38a169;">✅ وضعیت جوی پیش‌رو در سطح ایمن است.</li>`;
-            }
+            if (maxPrecip > 50) { html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار سیل: پیش‌بینی بارش ${maxPrecip.toFixed(1)} میلی‌متر!</li>`; hasAlert = true; }
+            else if (maxPrecip > 20) { html += `<li style="color: #dd6b20;">🌧️ بارش قابل توجه: ${maxPrecip.toFixed(1)} میلی‌متر.</li>`; hasAlert = true; }
+            if (maxWind > 60) { html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار طوفان: سرعت باد تا ${maxWind.toFixed(1)} km/h!</li>`; hasAlert = true; }
+            if (maxTemp > 40) { html += `<li style="color: #e53e3e; font-weight: bold;">⚠️ هشدار گرمای شدید: دما تا ${maxTemp.toFixed(1)} درجه!</li>`; hasAlert = true; }
+            if (minTemp < 0) { html += `<li style="color: #3182ce;">❄️ هشدار یخبندان: دمای حداقل ${minTemp.toFixed(1)} درجه!</li>`; hasAlert = true; }
+            if (totalSnow > 5) { html += `<li style="color: #3182ce;">⛄ هشدار بارش برف: مجموع ${totalSnow.toFixed(1)} سانتی‌متر!</li>`; hasAlert = true; }
+            if (hasThunder) { html += `<li style="color: #805ad5;">⚡ احتمال رعد و برق در ۳ روز آینده!</li>`; hasAlert = true; }
+            if (!hasAlert) { html += `<li style="color: #38a169;">✅ وضعیت جوی پیش‌رو در سطح ایمن است.</li>`; }
         } else {
             html += `<li>⚠️ داده‌های پیش‌بینی در دسترس نیست.</li>`;
         }
-        )
         html += `</ul>`;
+
         document.getElementById('paramDetails').innerHTML = html;
 
         generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
