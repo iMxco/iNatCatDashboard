@@ -10,6 +10,7 @@ let riverDataCache = null;
 let citiesSubsidenceCache = null;
 let hanoverSubsidenceCache = null;
 let airportsCache = null;
+let lightningCache = null;
 let airwaysCache = null;
 
 // ============================================================
@@ -646,12 +647,37 @@ async function getForecastData(lat, lon) {
         return data.daily;
     } catch (e) { return null; }
 }
+async function loadLightningData() {
+    if (lightningCache) return lightningCache;
+    try {
+        const res = await fetch('iran-lightning-density.geojson');
+        if (!res.ok) return null;
+        lightningCache = await res.json();
+        return lightningCache;
+    } catch (e) { return null; }
+}
+
 async function analyzeAll() {
     const lat = parseFloat(document.getElementById('lat').value), lon = parseFloat(document.getElementById('lon').value);
     if (isNaN(lat) || isNaN(lon)) return alert('مختصات معتبر وارد کنید');
     
     document.getElementById('loading').style.display = 'block';
     document.getElementById('result').classList.remove('show');
+    
+            // 🌟 محاسبه چگالی صاعقه (قبل از شروع تحلیل اصلی)
+        let lightningDensity = null;
+        const lightningData = await loadLightningData();
+        if (lightningData && lightningData.features) {
+            const userPoint = turf.point([lon, lat]);
+            let minDist = Infinity;
+            lightningData.features.forEach(f => {
+                const d = turf.distance(userPoint, f, { units: 'kilometers' });
+                if (d < minDist) { 
+                    minDist = d; 
+                    lightningDensity = f.properties.density; 
+                }
+            });
+        }
     const token = getToken();
 
     try {
@@ -783,7 +809,11 @@ async function analyzeAll() {
         html += `<h4>⚡ صاعقه</h4><ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`; else html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
+            if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
+                    if (lightningDensity !== null) {
+            html += `<li>چگالی آذرخش (میانگین بلندمدت): ${lightningDensity.toFixed(2)}</li>`;
+        }
+            else html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
             html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
         } else { html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`; }
