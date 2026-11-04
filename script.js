@@ -811,19 +811,36 @@ async function analyzeAll() {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
             if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
             
+                    // بخش صاعقه
+        html += `<h4>⚡ صاعقه</h4>`;
+        html += `<ul>`;
+        if (climate) {
+            html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
+            
+            if (typeof capeData !== 'undefined' && capeData !== null) {
+                html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
+            } else {
+                html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
+            }
+
             if (lightningDensity !== null) {
-            const annualDensity = lightningDensity * 365;
-            html += `<li>چگالی آذرخش (سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
+                const annualDensity = lightningDensity * 365;
+                html += `<li>چگالی آذرخش (سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
+            }
+
+            html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
+            html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
         } else {
             html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
-    } // بستن بلاک if (climate)
+        html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
+        html += `</ul>`;
 
-    html += `<li>انرژی همرفتی (CAPE): ${typeof capeData !== 'undefined' && capeData !== null ? capeData.toFixed(0) + ' J/kg' : 'داده‌ای ثبت نشده'}</li>`;
-    html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
-    html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
-    html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-    html += `</ul>`;
+        // 🌟 نمایش نقشه توزیع مکانی آذرخش (بیرون از لیست)
+        html += `<div style="text-align: center; margin-top: 15px;">`;
+        html += `<img src="lightning-map.png" alt="نقشه توزیع آذرخش ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p>`;
+        html += `</div>`;
 
     // 🌟 نمایش نقشه توزیع مکانی آذرخش
     html += `<div style="text-align: center; margin-top: 15px;">`;
