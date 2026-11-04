@@ -677,7 +677,26 @@ async function analyzeAll() {
         const slopePercent = slopeData ? slopeData.slopePercent : null; 
         const vs30 = await getVs30Estimate(slopePercent);
 
-        let fScore = 1; if (climate) { if (climate.precip.annualAvg > 700) fScore = 4; else if (climate.precip.annualAvg > 500) fScore = 3; else if (climate.precip.annualAvg > 300) fScore = 2; if (climate.precip.pci > 25) fScore += 0.5; } if (discharge && discharge.ratio > 2) fScore += 0.5; if (river && river.found && river.distance < 500) fScore += 0.5;
+        let fScore = 1; if (climate) { if (climate.precip.annualAvg > 700) fScore = 4; else if (climate.precip.annualAvg > 500) fScore = 3; else if (climate.precip.annualAvg > 300) fScore = 2; if (climate.precip.pci > 25) fScore += 0.5; }
+                // 🌟 تشخیص اقلیم و تأثیر آن بر خطر سیل
+        let climateType = 'نامشخص';
+        if (climate) {
+            const annualPrecip = climate.precip.annualAvg;
+            const annualTemp = climate.temp.annualAvg;
+            
+            if (annualPrecip < 100 && annualTemp > 18) {
+                climateType = 'بیابانی (خشک)';
+                fScore += 0.5; // در اقلیم خشک، باران کم هم سیل‌آسا است
+            } else if (annualPrecip < 300) {
+                climateType = 'نیمه‌خشک (استپی)';
+                fScore += 0.25;
+            } else if (annualPrecip > 700) {
+                climateType = 'مرطوب (پربارش)';
+            } else {
+                climateType = 'مدیترانه‌ای (معتدل)';
+            }
+        }
+        if (discharge && discharge.ratio > 2) fScore += 0.5; if (river && river.found && river.distance < 500) fScore += 0.5;
                 // 🌟 تأثیر پوشش گیاهی (NDVI) بر خطر سیل
         if (ndvi && typeof ndvi.avg !== 'undefined') {
             if (ndvi.avg < 0.1) {
@@ -743,6 +762,7 @@ async function analyzeAll() {
         let html = '<h3>📋 جزئیات تحلیل</h3>';
         html += `<h4>🌊 سیل</h4><ul>`;
         if (climate) html += `<li>بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li><li>PCI: ${climate.precip.pci.toFixed(1)}</li>`;
+        if (climate) html += `<li>نوع اقلیم: ${climateType}</li>`;
         if (discharge) html += `<li>دبی GloFAS: ${discharge.current.toFixed(1)} m³/s</li>`; else html += `<li style="color: #dd6b20;">⚠️ داده دبی معتبر نیست.</li>`;
         if (ndvi) html += `<li>NDVI: ${ndvi.avg.toFixed(3)}</li>`;
         if (landCover) html += `<li>کاربری اراضی: ${landCover.name}</li>`;
