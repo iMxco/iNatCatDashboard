@@ -831,12 +831,6 @@ async function analyzeAll() {
     html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p>`;
     html += `</div>`;
 
-    html += `<li>انرژی همرفتی (CAPE): ${typeof capeData !== 'undefined' && capeData !== null ? capeData.toFixed(0) + ' J/kg' : 'داده‌ای ثبت نشده'}</li>`;
-    html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
-    html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
-    html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li>`;
-    html += `</ul>`;
-
         html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
                 // 🌟 بخش هشدارهای پیش‌بینی
         html += `<h4>🚨 هشدارهای پیش‌بینی (۳ روز آینده)</h4>`;
