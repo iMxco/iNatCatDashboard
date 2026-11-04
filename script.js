@@ -811,7 +811,10 @@ async function analyzeAll() {
             html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
             if (typeof capeData !== 'undefined' && capeData !== null) html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
                     if (lightningDensity !== null) {
-            html += `<li>چگالی آذرخش (میانگین بلندمدت): ${lightningDensity.toFixed(2)}</li>`;
+                    if (lightningDensity !== null) {
+            const annualDensity = lightningDensity * 365; // تبدیل به واحد سالانه
+            html += `<li>چگالی آذرخش (سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
+        }
         }
             else html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
