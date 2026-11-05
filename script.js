@@ -568,14 +568,14 @@ async function analyzeAll() {
         
         // بخش سیل
         html += `<h4>🌊 سیل</h4><ul>`;
-        if (climate) html += `<li>بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li><li>PCI: ${climate.precip.pci.toFixed(1)}</li><li>نوع اقلیم: ${climateType}</li>`;
+        if (climate) html += `<li>میانگین بارش سالانه (۲۰ ساله): ${climate.precip.annualAvg.toFixed(1)} mm</li><li>PCI (شاخص تمرکز بارش): ${climate.precip.pci.toFixed(1)}</li><li>نوع اقلیم: ${climateType}</li>`;
         if (discharge) {
             html += `<li>دبی GloFAS: ${discharge.current.toFixed(1)} m³/s</li>`;
         } else {
             html += `<li style="color: #dd6b20;">⚠️ داده دبی GloFAS برای این نقطه معتبر نیست.</li>`;
         }
         if (ndvi) html += `<li>NDVI: ${ndvi.avg.toFixed(3)}</li>`;
-        if (landCover) html += `<li>کاربری اراضی: ${landCover.name}</li>`;
+        if (landCover) html += `<li>کاربری اراضی (نوع پوشش زمین): ${landCover.name}</li>`;
         if (river && river.found) html += `<li>فاصله از رودخانه: ${river.distanceText}</li>`;
         if (recentPrecip) html += `<li>بارش ۱۰ روز اخیر: ${recentPrecip.avg.toFixed(2)} mm</li>`;
         html += `</ul>`;
@@ -623,15 +623,15 @@ async function analyzeAll() {
         // بخش صاعقه
         html += `<h4>⚡ صاعقه</h4><ul>`;
         if (climate) {
-            html += `<li>میانگین بارش سالانه: ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-            if (typeof capeData !== 'undefined' && capeData !== null) {
-                html += `<li>انرژی همرفتی (CAPE): ${capeData.toFixed(0)} J/kg</li>`;
+            html += `<li>میانگین بارش سالانه (۲۰ ساله): ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
+           if (typeof capeData !== 'undefined' && capeData !== null) {
+    html += `<li>انرژی همرفتی (CAPE - پتانسیل رعد و برق): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
                 html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             }
             if (lightningDensity !== null) {
                 const annualDensity = lightningDensity * 365;
-                html += `<li>چگالی آذرخش (سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
+               html += `<li>چگالی آذرخش (میانگین سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
             }
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
             html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
