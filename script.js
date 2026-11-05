@@ -565,6 +565,13 @@ async function analyzeAll() {
             if (autoElevation > 2000) lScore += 1; else if (autoElevation > 1000) lScore += 0.5;
             if (buildingHeight > 30) lScore += 1; else if (buildingHeight > 10) lScore += 0.5;
         }
+                    // 🌟 تأثیر چگالی واقعی آذرخش (تعداد صاعقه در کیلومتر مربع در سال)
+            if (lightningDensity !== null) {
+                const annualDensity = lightningDensity * 365; // تبدیل به واحد سالانه
+                if (annualDensity > 5) lScore += 2;
+                else if (annualDensity > 2) lScore += 1;
+                else if (annualDensity > 1) lScore += 0.5;
+            }
         lScore = Math.min(5, Math.max(1, lScore));
 
         // --- محاسبه امتیاز طوفان (wScore) و دما (tScore) ---
