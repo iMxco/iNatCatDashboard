@@ -612,7 +612,7 @@ async function analyzeAll() {
         html += `</ul>`;
 
         // بخش زلزله
-        html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance} km</li><li>Vs30 (سرعت موج برشی خاک): ${vs30} m/s</li></ul>`;
+        html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance.toFixed(2)} km</li><li>Vs30 (سرعت موج برشی خاک): ${vs30} m/s</li></ul>`;
         if (eqData.recentQuakes.length > 0) {
             const maxMagRecent = Math.max(...eqData.recentQuakes.map(q => q.mag));
             html += `<table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
