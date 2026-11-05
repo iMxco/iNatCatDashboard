@@ -605,7 +605,17 @@ async function analyzeAll() {
         const boxStyle = `style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"`;
 
         // --- تولید کدهای HTML برای جزئیات تحلیل ---
+                // 🌟 استایل مشترک برای کادرهای داخلی
+        const boxStyle = `style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"`;
+
+        // --- تولید کدهای HTML برای جزئیات تحلیل ---
         let html = '<h3>📋 جزئیات تحلیل</h3>';
+        
+        // ============================================================
+        // کادر اصلی اول: تحلیل تاریخی (گذشته‌نگر)
+        // ============================================================
+        html += `<div style="background: #f7fafc; border: 2px solid #cbd5e0; border-radius: 15px; padding: 20px; margin-bottom: 30px;">`;
+        html += `<h2 style="color: #2c5282; text-align: center; margin-bottom: 20px; font-size: 22px;">📜 تحلیل داده‌های تاریخی (Historical Analysis)</h2>`;
         
         // بخش سیل
         html += `<div ${boxStyle}>`;
@@ -644,7 +654,6 @@ async function analyzeAll() {
             });
             html += `</tbody></table>`;
         }
-        // نمایش نقشه گسل‌ها (بیرون از شرط if)
         html += `<div style="text-align: center; margin-top: 15px;">`;
         html += `<img src="faults-map.png" alt="نقشه گسل‌های فعال ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
         html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه گسل‌های فعال ایران (منبع: پایگاه داده گسل‌های فعال)</p>`;
@@ -691,17 +700,25 @@ async function analyzeAll() {
             html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
         html += `<li>امتیاز نهایی صاعقه: ${lScore.toFixed(1)}</li></ul>`;
-
-        // نقشه توزیع مکانی آذرخش
         html += `<div style="text-align: center; margin-top: 15px;">`;
         html += `<img src="lightning-map.png" alt="نقشه توزیع آذرخش ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
-        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p></div></div>`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p></div>`;
+        html += `</div>`;
 
         // بخش هوانوردی
         html += `<div ${boxStyle}>`;
         html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul></div>`;
 
-        // بخش هشدارهای پیش‌بینی
+        // بستن کادر اول
+        html += `</div>`; 
+
+
+        // ============================================================
+        // کادر اصلی دوم: تحلیل آینده‌نگر (پیش‌بینی)
+        // ============================================================
+        html += `<div style="background: #ebf8ff; border: 2px solid #90cdf4; border-radius: 15px; padding: 20px; margin-bottom: 30px;">`;
+        html += `<h2 style="color: #2b6cb0; text-align: center; margin-bottom: 20px; font-size: 22px;">🔮 تحلیل آینده‌نگر (Prospective Analysis)</h2>`;
+        
         html += `<div ${boxStyle}>`;
         html += `<h4>🚨 هشدارهای پیش‌بینی (۳ روز آینده)</h4><ul>`;
         if (forecastData) {
@@ -725,9 +742,11 @@ async function analyzeAll() {
             html += `<li>⚠️ داده‌های پیش‌بینی در دسترس نیست.</li>`;
         }
         html += `</ul></div>`;
+        
+        // بستن کادر دوم
+        html += `</div>`;
 
         document.getElementById('paramDetails').innerHTML = html;
-
         generateInsuranceAssistant(eScore, subScore, lScore, fScore, landScore, avScore, climate);
         document.getElementById('result').classList.add('show');
 
