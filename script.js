@@ -792,41 +792,42 @@ function generateInsuranceAssistant(e, s, l, f, land, av, climate) {
     let html = ''; 
     let has = false;
     
+    const cardStyle = `background:#ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding:15px; margin-bottom:15px;`;
+    
     if (e > 2.5) { 
         has = true; 
-        html += `<div style="background:#fff5f5; padding:15px; border-right:4px solid #e53e3e; margin-bottom:15px;"><h4>🌍 زلزله (امتیاز: ${e.toFixed(1)})</h4><p><strong>مدارک:</strong> گزارش ژئوتکنیک، نقشه سازه، سوابق ترک.</p><p><strong>توصیه:</strong> دامنه پوشش زلزله و فرانشیز درج شود.</p></div>`; 
+        html += `<div style="${cardStyle} border-right:4px solid #e53e3e;"><h4>🌍 زلزله (امتیاز: ${e.toFixed(1)})</h4><p><strong>مدارک:</strong> گزارش ژئوتکنیک، نقشه سازه، سوابق ترک.</p><p><strong>توصیه:</strong> دامنه پوشش زلزله و فرانشیز درج شود.</p></div>`; 
     }
     
     if (s > 2.5) { 
         has = true; 
-        html += `<div style="background:#fffaf0; padding:15px; border-right:4px solid #dd6b20; margin-bottom:15px;"><h4>📉 فرونشست زمین (امتیاز: ${s.toFixed(1)})</h4><p><strong>مدارک:</strong> پایش تراز، وضعیت خطوط مدفون.</p><p><strong>توصیه:</strong> پوشش فرونشست جدا از زلزله روشن شود.</p></div>`; 
+        html += `<div style="${cardStyle} border-right:4px solid #dd6b20;"><h4>📉 فرونشست زمین (امتیاز: ${s.toFixed(1)})</h4><p><strong>مدارک:</strong> پایش تراز، وضعیت خطوط مدفون.</p><p><strong>توصیه:</strong> پوشش فرونشست جدا از زلزله روشن شود.</p></div>`; 
     }
     
     if (l > 2.5) { 
         has = true; 
-        html += `<div style="background:#f0fff4; padding:15px; border-right:4px solid #38a169; margin-bottom:15px;"><h4>⚡ صاعقه (امتیاز: ${l.toFixed(1)})</h4><p><strong>مدارک:</strong> طرح حفاظت صاعقه، لیست تجهیزات حساس.</p><p><strong>توصیه:</strong> پوشش اضافه‌ولتاژ جداگانه روشن شود.</p></div>`; 
+        html += `<div style="${cardStyle} border-right:4px solid #38a169;"><h4>⚡ صاعقه (امتیاز: ${l.toFixed(1)})</h4><p><strong>مدارک:</strong> طرح حفاظت صاعقه، لیست تجهیزات حساس.</p><p><strong>توصیه:</strong> پوشش اضافه‌ولتاژ جداگانه روشن شود.</p></div>`; 
     }
     
     if (f > 2.5 && climate) { 
         has = true; 
-        html += `<div style="background:#ebf8ff; padding:15px; border-right:4px solid #3182ce; margin-bottom:15px;"><h4>🌊 سیل (امتیاز: ${f.toFixed(1)})</h4><p><strong>وضعیت:</strong> میانگین بارش سالانه ${climate.precip.annualAvg.toFixed(0)} mm.</p><p><strong>توصیه:</strong> بازدید از زهکشی و اخذ مدارک سیلاب‌های گذشته.</p></div>`; 
+        html += `<div style="${cardStyle} border-right:4px solid #3182ce;"><h4>🌊 سیل (امتیاز: ${f.toFixed(1)})</h4><p><strong>وضعیت:</strong> میانگین بارش سالانه ${climate.precip.annualAvg.toFixed(0)} mm.</p><p><strong>توصیه:</strong> بازدید از زهکشی و اخذ مدارک سیلاب‌های گذشته.</p></div>`; 
     }
     
     if (land > 2.5) { 
         has = true; 
-        html += `<div style="background:#faf5ff; padding:15px; border-right:4px solid #805ad5; margin-bottom:15px;"><h4>⛰️ رانش زمین (امتیاز: ${land.toFixed(1)})</h4><p><strong>توصیه:</strong> بررسی پایداری شیب و زهکشی دامنه‌ها.</p></div>`; 
+        html += `<div style="${cardStyle} border-right:4px solid #805ad5;"><h4>⛰️ رانش زمین (امتیاز: ${land.toFixed(1)})</h4><p><strong>توصیه:</strong> بررسی پایداری شیب و زهکشی دامنه‌ها.</p></div>`; 
     }
 
     if (av > 2.5) { 
         has = true; 
-        html += `<div style="background:#e6fffa; padding:15px; border-right:4px solid #319795; margin-bottom:15px;"><h4>✈️ هوانوردی (امتیاز: ${av.toFixed(1)})</h4><p><strong>توصیه:</strong> بررسی حریم فرودگاه، موانع پروازی، و خطر پرنده یا پهپاد.</p></div>`; 
+        html += `<div style="${cardStyle} border-right:4px solid #319795;"><h4>✈️ هوانوردی (امتیاز: ${av.toFixed(1)})</h4><p><strong>توصیه:</strong> بررسی حریم فرودگاه، موانع پروازی، و خطر پرنده یا پهپاد.</p></div>`; 
     }
     
-    if (!has) html = '<p style="color:#38a169;">✅ هیچ مخاطره‌ای با امتیاز بالاتر از ۲.۵ یافت نشد.</p>';
+    if (!has) html = '<p style="color:#38a169; text-align:center;">✅ هیچ مخاطره‌ای با امتیاز بالاتر از ۲.۵ یافت نشد.</p>';
     c.innerHTML = html; 
     document.getElementById('insuranceAssistant').style.display = 'block';
 }
-
 // ============================================================
 // خروجی PDF
 // ============================================================
