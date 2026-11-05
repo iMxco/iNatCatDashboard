@@ -618,8 +618,9 @@ async function analyzeAll() {
         if (recentPrecip) html += `<li>بارش ۱۰ روز اخیر: ${recentPrecip.avg.toFixed(2)} mm</li>`;
         html += `</ul>`;
 
-        // بخش زلزله
+                // بخش زلزله
         html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance.toFixed(2)} km</li><li>Vs30 (سرعت موج برشی خاک): ${vs30} m/s</li></ul>`;
+        
         if (eqData.recentQuakes.length > 0) {
             const maxMagRecent = Math.max(...eqData.recentQuakes.map(q => q.mag));
             html += `<table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
@@ -639,7 +640,8 @@ async function analyzeAll() {
             });
             html += `</tbody></table>`;
         }
-                // 🌟 نمایش نقشه گسل‌ها (دقیقاً مشابه نقشه صاعقه)
+
+        // 🌟 نمایش نقشه گسل‌ها (بیرون از شرط if، همیشه نمایش داده می‌شود)
         html += `<div style="text-align: center; margin-top: 15px;">`;
         html += `<img src="faults-map.png" alt="نقشه گسل‌های فعال ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
         html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه گسل‌های فعال ایران (منبع: پایگاه داده گسل‌های فعال)</p>`;
