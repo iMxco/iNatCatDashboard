@@ -601,11 +601,8 @@ async function analyzeAll() {
         drawRadarChart(scores); 
         drawBarChart(scores);
         if (climate) { drawPrecipChart(climate.precip.monthly); drawWindChart(climate.wind.monthly); drawTempChart(climate.temp.monthly); }
-                        // 🌟 استایل مشترک برای کادرهای خوشگل
-        const boxStyle = `style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"`;
-
-        // --- تولید کدهای HTML برای جزئیات تحلیل ---
-                // 🌟 استایل مشترک برای کادرهای داخلی
+      
+        // 🌟 استایل مشترک برای کادرهای داخلی
         const boxStyle = `style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"`;
 
         // --- تولید کدهای HTML برای جزئیات تحلیل ---
