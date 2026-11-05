@@ -601,10 +601,14 @@ async function analyzeAll() {
         drawRadarChart(scores); 
         drawBarChart(scores);
         if (climate) { drawPrecipChart(climate.precip.monthly); drawWindChart(climate.wind.monthly); drawTempChart(climate.temp.monthly); }
-                // --- تولید کدهای HTML برای جزئیات تحلیل ---
+                        // 🌟 استایل مشترک برای کادرهای خوشگل
+        const boxStyle = `style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"`;
+
+        // --- تولید کدهای HTML برای جزئیات تحلیل ---
         let html = '<h3>📋 جزئیات تحلیل</h3>';
         
         // بخش سیل
+        html += `<div ${boxStyle}>`;
         html += `<h4>🌊 سیل</h4><ul>`;
         if (climate) html += `<li>میانگین بارش سالانه (۲۰ ساله): ${climate.precip.annualAvg.toFixed(1)} mm</li><li>PCI (شاخص تمرکز بارش): ${climate.precip.pci.toFixed(1)}</li><li>نوع اقلیم: ${climateType}</li>`;
         if (discharge) {
@@ -616,11 +620,11 @@ async function analyzeAll() {
         if (landCover) html += `<li>کاربری اراضی (نوع پوشش زمین): ${landCover.name}</li>`;
         if (river && river.found) html += `<li>فاصله از رودخانه: ${river.distanceText}</li>`;
         if (recentPrecip) html += `<li>بارش ۱۰ روز اخیر: ${recentPrecip.avg.toFixed(2)} mm</li>`;
-        html += `</ul>`;
+        html += `</ul></div>`;
 
-                // بخش زلزله
+        // بخش زلزله
+        html += `<div ${boxStyle}>`;
         html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance.toFixed(2)} km</li><li>Vs30 (سرعت موج برشی خاک): ${vs30} m/s</li></ul>`;
-        
         if (eqData.recentQuakes.length > 0) {
             const maxMagRecent = Math.max(...eqData.recentQuakes.map(q => q.mag));
             html += `<table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
@@ -640,31 +644,35 @@ async function analyzeAll() {
             });
             html += `</tbody></table>`;
         }
-
-        // 🌟 نمایش نقشه گسل‌ها (بیرون از شرط if، همیشه نمایش داده می‌شود)
+        // نمایش نقشه گسل‌ها (بیرون از شرط if)
         html += `<div style="text-align: center; margin-top: 15px;">`;
         html += `<img src="faults-map.png" alt="نقشه گسل‌های فعال ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
         html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه گسل‌های فعال ایران (منبع: پایگاه داده گسل‌های فعال)</p>`;
-        html += `</div>`;
+        html += `</div></div>`;
+
         // بخش توپوگرافی
+        html += `<div ${boxStyle}>`;
         html += `<h4>🏔️ توپوگرافی</h4><ul>
                     <li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>
                     <li>شیب تقریبی: ${slopePercent ? slopePercent.toFixed(1) : 'نامشخص'}%</li>
-                 </ul>`;
+                 </ul></div>`;
 
         // بخش فرونشست
-        html += `<h4>📉 فرونشست زمین</h4><ul><li>${subsidenceText}</li></ul>`;
+        html += `<div ${boxStyle}>`;
+        html += `<h4>📉 فرونشست زمین</h4><ul><li>${subsidenceText}</li></ul></div>`;
 
         // بخش طوفان و دما
+        html += `<div ${boxStyle}>`;
         html += `<h4>🌪️ طوفان و 🌡️ دما</h4><ul>`;
         if (climate) {
             html += `<li>میانگین سرعت طوفان: ${climate.wind.annualAvg.toFixed(1)} km/h</li><li>میانگین دما: ${climate.temp.annualAvg.toFixed(1)} C°</li>`;
         } else {
             html += `<li style="color: #dd6b20;">⚠️ داده‌های اقلیمی دریافت نشد.</li>`;
         }
-        html += `</ul>`;
+        html += `</ul></div>`;
 
         // بخش صاعقه
+        html += `<div ${boxStyle}>`;
         html += `<h4>⚡ صاعقه</h4><ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه (۲۰ ساله): ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
@@ -687,12 +695,14 @@ async function analyzeAll() {
         // نقشه توزیع مکانی آذرخش
         html += `<div style="text-align: center; margin-top: 15px;">`;
         html += `<img src="lightning-map.png" alt="نقشه توزیع آذرخش ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
-        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p></div>`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه میانگین چگالی آذرخش (منبع: دیتاست WGLC)</p></div></div>`;
 
         // بخش هوانوردی
-        html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul>`;
+        html += `<div ${boxStyle}>`;
+        html += `<h4>✈️ خطر هوانوردی</h4><ul><li>${aviationData ? aviationData.text : 'داده در دسترس نیست'}</li></ul></div>`;
 
         // بخش هشدارهای پیش‌بینی
+        html += `<div ${boxStyle}>`;
         html += `<h4>🚨 هشدارهای پیش‌بینی (۳ روز آینده)</h4><ul>`;
         if (forecastData) {
             let hasAlert = false;
@@ -714,7 +724,7 @@ async function analyzeAll() {
         } else {
             html += `<li>⚠️ داده‌های پیش‌بینی در دسترس نیست.</li>`;
         }
-        html += `</ul>`;
+        html += `</ul></div>`;
 
         document.getElementById('paramDetails').innerHTML = html;
 
