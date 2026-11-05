@@ -574,14 +574,14 @@ async function analyzeAll() {
         } else {
             html += `<li style="color: #dd6b20;">⚠️ داده دبی GloFAS برای این نقطه معتبر نیست.</li>`;
         }
-        if (ndvi) html += `<li>NDVI: ${ndvi.avg.toFixed(3)}</li>`;
+        if (ndvi) html += `<li>NDVI (شاخص پوشش گیاهی): ${ndvi.avg.toFixed(3)}</li>`;
         if (landCover) html += `<li>کاربری اراضی (نوع پوشش زمین): ${landCover.name}</li>`;
         if (river && river.found) html += `<li>فاصله از رودخانه: ${river.distanceText}</li>`;
         if (recentPrecip) html += `<li>بارش ۱۰ روز اخیر: ${recentPrecip.avg.toFixed(2)} mm</li>`;
         html += `</ul>`;
 
         // بخش زلزله
-        html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance} km</li><li>Vs30: ${vs30} m/s</li></ul>`;
+        html += `<h4>🌍 زلزله</h4><ul><li>فاصله تا گسل: ${eqData.faultDistance} km</li><li>Vs30 (سرعت موج برشی خاک): ${vs30} m/s</li></ul>`;
         if (eqData.recentQuakes.length > 0) {
             const maxMagRecent = Math.max(...eqData.recentQuakes.map(q => q.mag));
             html += `<table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
@@ -624,14 +624,14 @@ async function analyzeAll() {
         html += `<h4>⚡ صاعقه</h4><ul>`;
         if (climate) {
             html += `<li>میانگین بارش سالانه (۲۰ ساله): ${climate.precip.annualAvg.toFixed(1)} mm</li>`;
-           if (typeof capeData !== 'undefined' && capeData !== null) {
-    html += `<li>انرژی همرفتی (CAPE - پتانسیل رعد و برق): ${capeData.toFixed(0)} J/kg</li>`;
+            if (typeof capeData !== 'undefined' && capeData !== null) {
+                html += `<li>انرژی همرفتی (CAPE - پتانسیل رعد و برق): ${capeData.toFixed(0)} J/kg</li>`;
             } else {
                 html += `<li>انرژی همرفتی (CAPE): داده‌ای ثبت نشده</li>`;
             }
             if (lightningDensity !== null) {
                 const annualDensity = lightningDensity * 365;
-               html += `<li>چگالی آذرخش (میانگین سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
+                html += `<li>چگالی آذرخش (میانگین سالانه): ${annualDensity.toFixed(1)} صاعقه در هر کیلومتر مربع</li>`;
             }
             html += `<li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>`;
             html += `<li>ارتفاع سازه: ${buildingHeight} متر</li>`;
@@ -755,7 +755,7 @@ function generateInsuranceAssistant(e, s, l, f, land, av, climate) {
     
     if (f > 2.5 && climate) { 
         has = true; 
-        html += `<div style="background:#ebf8ff; padding:15px; border-right:4px solid #3182ce; margin-bottom:15px;"><h4>🌊 سیل (امتیاز: ${f.toFixed(1)})</h4><p><strong>وضعیت:</strong> بارش سالانه ${climate.precip.annualAvg.toFixed(0)} mm.</p><p><strong>توصیه:</strong> بازدید از زهکشی و اخذ مدارک سیلاب‌های گذشته.</p></div>`; 
+        html += `<div style="background:#ebf8ff; padding:15px; border-right:4px solid #3182ce; margin-bottom:15px;"><h4>🌊 سیل (امتیاز: ${f.toFixed(1)})</h4><p><strong>وضعیت:</strong> میانگین بارش سالانه ${climate.precip.annualAvg.toFixed(0)} mm.</p><p><strong>توصیه:</strong> بازدید از زهکشی و اخذ مدارک سیلاب‌های گذشته.</p></div>`; 
     }
     
     if (land > 2.5) { 
