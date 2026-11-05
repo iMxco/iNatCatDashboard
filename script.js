@@ -14,6 +14,7 @@ let hanoverSubsidenceCache = null;
 let airportsCache = null;
 let airwaysCache = null;
 let lightningCache = null;
+let faultsCache = null;
 
 // ============================================================
 // راه‌اندازی نقشه و مارکر
@@ -385,11 +386,41 @@ async function loadLightningData() {
     if (lightningCache) return lightningCache;
     try { const res = await fetch('iran-lightning-density.geojson'); if (!res.ok) return null; lightningCache = await res.json(); return lightningCache; } catch (e) { return null; }
 }
+async function loadFaultsData() {
+    if (faultsCache) return faultsCache;
+    try {
+        const res = await fetch('iran-faults.geojson');
+        if (!res.ok) return null;
+        faultsCache = await res.json();
+        return faultsCache;
+    } catch (e) { return null; }
+}
 
 async function getEarthquakeData(lat, lon) {
     const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&latitude=${lat}&longitude=${lon}&maxradiuskm=150&minmagnitude=4.0&starttime=1900-01-01&limit=100`;
     let quakes = []; try { const res = await fetch(url); if (res.ok) quakes = (await res.json()).features || []; } catch(e) {}
-    let faultDistance = 50; if (lat > 35 && lat < 37 && lon > 49 && lon < 54) faultDistance = 12.5; else if (lat > 30 && lat < 35 && lon > 45 && lon < 52) faultDistance = 25.0;
+       // محاسبه دقیق فاصله تا گسل با استفاده از داده‌های GeoJSON
+    let faultDistance = 50; // مقدار پیش‌فرض اگر داده‌ای نبود
+    const faultsData = await loadFaultsData();
+    
+    if (faultsData && faultsData.features) {
+        const userPoint = turf.point([lon, lat]);
+        let minDist = Infinity;
+        
+        faultsData.features.forEach(f => {
+            if (!f.geometry) return;
+            if (f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString') {
+                try {
+                    const d = turf.pointToLineDistance(userPoint, f, { units: 'kilometers' });
+                    if (d < minDist) minDist = d;
+                } catch (e) {}
+            }
+        });
+        
+        if (minDist !== Infinity) {
+            faultDistance = minDist;
+        }
+    }
     let maxMag = 0, nearest = { dist: 9999, mag: 0 }; let recentQuakes = [];
     if (quakes.length > 0) {
         const qData = quakes.map(q => ({ mag: q.properties.mag, dist: haversine(lat, lon, q.geometry.coordinates[1], q.geometry.coordinates[0]) / 1000, time: q.properties.time, date: new Date(q.properties.time).toLocaleDateString('fa-IR') }));
@@ -601,7 +632,11 @@ async function analyzeAll() {
             });
             html += `</tbody></table>`;
         }
-
+                // 🌟 نمایش نقشه گسل‌ها (دقیقاً مشابه نقشه صاعقه)
+        html += `<div style="text-align: center; margin-top: 15px;">`;
+        html += `<img src="faults-map.png" alt="نقشه گسل‌های فعال ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه گسل‌های فعال ایران (منبع: پایگاه داده گسل‌های فعال)</p>`;
+        html += `</div>`;
         // بخش توپوگرافی
         html += `<h4>🏔️ توپوگرافی</h4><ul>
                     <li>ارتفاع از سطح دریا: ${autoElevation.toFixed(0)} متر</li>
