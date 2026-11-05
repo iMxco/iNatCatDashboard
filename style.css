@@ -325,3 +325,12 @@ button {
     margin-bottom: 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
+/* استایل کادر دستیار بیمه‌گر */
+.insurance-assistant {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
