@@ -112,6 +112,16 @@
         </div>
     </div>
 
+            <!-- 🌟 بخش محاسبه‌گر حق بیمه -->
+        <div class="param-details" id="premiumCalculator" style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px; display: none;">
+            <h2 style="color: #2c5282;">💰 محاسبه‌گر حق بیمه (Premium Calculator)</h2>
+            <p>حق بیمه پایه را وارد کنید تا ضریب ریسک منطقه محاسبه شود:</p>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="basePremium" value="10000000" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 5px; width: 200px;">
+                <button onclick="calculatePremium()" class="btn-primary" style="padding: 10px 20px;">محاسبه</button>
+            </div>
+            <div id="premiumResult" style="margin-top: 15px; font-weight: bold; color: #2d3748;"></div>
+        </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
