@@ -995,14 +995,17 @@ function drawMarkerOnImage(imageId, lat, lon) {
     const oldMarker = imgContainer.querySelector('.map-marker');
     if (oldMarker) oldMarker.remove();
 
-    // 🌟 مختصات دقیق محدوده عکس (کالیبره شده بر اساس تصویر EMME)
+    // 🌟 مرزهای دقیق نقشه در تصویر EMME
     const minLon = 20, maxLon = 80; 
     const minLat = 20, maxLat = 45;
 
     // محاسبه درصد مکان نقطه
-    // نکته: ما کمی اعداد را دستکاری می‌کنیم تا حاشیه‌های سفید عکس را جبران کنیم
-    const leftPercent = ((lon - minLon) / (maxLon - minLon)) * 100;
-    const topPercent = ((maxLat - lat) / (maxLat - minLat)) * 85; // ۸۵٪ برای جبران نوار پایین عکس
+    let leftPercent = ((lon - minLon) / (maxLon - minLon)) * 100;
+    let topPercent = ((maxLat - lat) / (maxLat - minLat)) * 100;
+
+    // 🌟 تنظیم دقیق برای جبران حاشیه‌های سفید و عنوان پایین
+    leftPercent = 2 + (leftPercent * 0.96);  // فشرده کردن به ۹۶٪ وسط
+    topPercent = 2 + (topPercent * 0.88);   // فشرده کردن به ۸۸٪ وسط
 
     // اگر نقطه خارج از محدوده عکس بود، دایره را نشان نده
     if (leftPercent < 0 || leftPercent > 100 || topPercent < 0 || topPercent > 100) return;
@@ -1013,12 +1016,12 @@ function drawMarkerOnImage(imageId, lat, lon) {
     marker.style.position = 'absolute';
     marker.style.left = `${leftPercent}%`;
     marker.style.top = `${topPercent}%`;
-    marker.style.width = '15px';
-    marker.style.height = '15px';
+    marker.style.width = '12px';
+    marker.style.height = '12px';
     marker.style.backgroundColor = 'red';
     marker.style.borderRadius = '50%';
-    marker.style.border = '3px solid white';
-    marker.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+    marker.style.border = '2px solid white';
+    marker.style.boxShadow = '0 0 10px rgba(0,0,0,0.8)';
     marker.style.transform = 'translate(-50%, -50%)';
     marker.style.animation = 'pulse 1.5s infinite';
     
