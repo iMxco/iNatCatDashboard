@@ -975,7 +975,7 @@ function calculatePremium() {
     // ۲. ذخیره در تاریخچه
     const li = document.createElement('li');
     li.style.cssText = 'padding: 8px; border-bottom: 1px solid #e2e8f0; color: #2d3748;';
-    li.innerHTML = `<strong>${basisNames[basis]}</strong>: نرخ ${finalRate.toFixed(5)} (ضریب ${multiplier}x)`;
+    li.innerHTML = `<strong>${basisNames[basis]}</strong>: نرخ ${finalRate.toFixed(5)} (ضریب تعدیل: ${multiplier})`;
     historyList.prepend(li); // اضافه کردن به بالای لیست
 
     // ۳. صفر کردن فیلد نرخ پایه برای محاسبه بعدی
