@@ -3,6 +3,7 @@
 // ============================================================
 let map = null;
 let currentOverallRisk = 0;
+let currentScores = { overall: 0, flood: 0, earthquake: 0, lightning: 0, aviation: 0 };
 let marker = null;
 let radarChart = null, barChart = null, precipChart = null, windChart = null, tempChart = null;
 const WORKER_URL = 'https://nassaproxyv2.behnam-zamani.workers.dev';
@@ -582,11 +583,18 @@ async function analyzeAll() {
         const avScore = aviationData ? aviationData.score : 1;
         const scores = [fScore, eScore, landScore, subScore, lScore, wScore, tScore, avScore];
         const overall = scores.reduce((a,b)=>a+b,0) / scores.length;
-        currentOverallRisk = overall; // 🌟 ذخیره امتیاز کلی برای ماژول حق بیمه
+                // 🌟 ذخیره امتیازها برای محاسبه‌گر نرخ
+        currentScores = {
+            overall: overall,
+            flood: fScore,
+            earthquake: eScore,
+            lightning: lScore,
+            aviation: avScore
+        };
         
-        // 🌟 نمایش کادر محاسبه‌گر حق بیمه
+        // 🌟 نمایش کادر محاسبه‌گر نرخ
         document.getElementById('premiumCalculator').style.display = 'block';
-        document.getElementById('premiumResult').innerHTML = ''; 
+        document.getElementById('premiumResult').innerHTML = '';  
 
         // --- نمایش ریسک کلی ---
         document.getElementById('overallRisk').textContent = overall >= 4 ? '🔴 ریسک کلی: بالا' : overall >= 2.5 ? '🟡 ریسک کلی: متوسط' : '🟢 ریسک کلی: پایین';
@@ -926,25 +934,30 @@ async function downloadPDF() {
 // ============================================================
 function calculatePremium() {
     const base = parseFloat(document.getElementById('basePremium').value) || 0;
+    const basis = document.getElementById('rateBasis').value;
     const resultDiv = document.getElementById('premiumResult');
     
-    if (!currentOverallRisk) {
-        resultDiv.innerHTML = '<span style="color: #e53e3e;">⚠️ لطفاً ابتدا یک نقطه را تحلیل کنید.</span>';
+    let score = currentScores[basis];
+    
+    if (!score) {
+        resultDiv.innerHTML = '<span style="color: #e53e3e;">⚠️ ابتدا یک نقطه را تحلیل کنید.</span>';
         return;
     }
 
     let multiplier = 1;
-    if (currentOverallRisk > 4) multiplier = 2.0;
-    else if (currentOverallRisk > 3) multiplier = 1.5;
-    else if (currentOverallRisk > 2) multiplier = 1.2;
+    if (score > 4) multiplier = 2.0;
+    else if (score > 3) multiplier = 1.5;
+    else if (score > 2) multiplier = 1.2;
 
     const finalPremium = base * multiplier;
     let color = multiplier >= 1.5 ? '#e53e3e' : (multiplier >= 1.2 ? '#dd6b20' : '#38a169');
+    const basisNames = { overall: 'ریسک کلی', flood: 'سیل', earthquake: 'زلزله', lightning: 'صاعقه', aviation: 'هوانوردی' };
     
     resultDiv.innerHTML = `
-        <div style="padding: 10px; background: #f7fafc; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
-            <span style="color: ${color}; font-weight: bold;">ضریب ریسک (Risk Multiplier): ${multiplier}x</span><br>
-            <span style="font-size: 18px; color: #2d3748;">حق بیمه تخمینی: ${finalPremium.toLocaleString('fa-IR')} ریال</span>
+        <div style="padding: 15px; background: #f7fafc; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
+            <span style="color: #4a5568;">مبنای محاسبه: <strong>${basisNames[basis]}</strong> (امتیاز: ${score.toFixed(1)})</span><br>
+            <span style="color: ${color}; font-weight: bold;">ضریب تعدیل ریسک (Risk Multiplier): ${multiplier}x</span><br>
+            <span style="font-size: 18px; color: #2d3748; margin-top: 5px; display: inline-block;">نرخ نهایی (Final Rate): ${finalPremium.toLocaleString('fa-IR')} ریال</span>
         </div>
     `;
 }
