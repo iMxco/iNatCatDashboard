@@ -2,6 +2,7 @@
 // متغیرهای جهانی
 // ============================================================
 let map = null;
+let currentOverallRisk = 0;
 let marker = null;
 let radarChart = null, barChart = null, precipChart = null, windChart = null, tempChart = null;
 const WORKER_URL = 'https://nassaproxyv2.behnam-zamani.workers.dev';
@@ -581,6 +582,11 @@ async function analyzeAll() {
         const avScore = aviationData ? aviationData.score : 1;
         const scores = [fScore, eScore, landScore, subScore, lScore, wScore, tScore, avScore];
         const overall = scores.reduce((a,b)=>a+b,0) / scores.length;
+        currentOverallRisk = overall; // 🌟 ذخیره امتیاز کلی برای ماژول حق بیمه
+        
+        // 🌟 نمایش کادر محاسبه‌گر حق بیمه
+        document.getElementById('premiumCalculator').style.display = 'block';
+        document.getElementById('premiumResult').innerHTML = ''; 
 
         // --- نمایش ریسک کلی ---
         document.getElementById('overallRisk').textContent = overall >= 4 ? '🔴 ریسک کلی: بالا' : overall >= 2.5 ? '🟡 ریسک کلی: متوسط' : '🟢 ریسک کلی: پایین';
@@ -918,6 +924,30 @@ async function downloadPDF() {
 // ============================================================
 // راه‌اندازی اولیه
 // ============================================================
+function calculatePremium() {
+    const base = parseFloat(document.getElementById('basePremium').value) || 0;
+    const resultDiv = document.getElementById('premiumResult');
+    
+    if (!currentOverallRisk) {
+        resultDiv.innerHTML = '<span style="color: #e53e3e;">⚠️ لطفاً ابتدا یک نقطه را تحلیل کنید.</span>';
+        return;
+    }
+
+    let multiplier = 1;
+    if (currentOverallRisk > 4) multiplier = 2.0;
+    else if (currentOverallRisk > 3) multiplier = 1.5;
+    else if (currentOverallRisk > 2) multiplier = 1.2;
+
+    const finalPremium = base * multiplier;
+    let color = multiplier >= 1.5 ? '#e53e3e' : (multiplier >= 1.2 ? '#dd6b20' : '#38a169');
+    
+    resultDiv.innerHTML = `
+        <div style="padding: 10px; background: #f7fafc; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
+            <span style="color: ${color}; font-weight: bold;">ضریب ریسک (Risk Multiplier): ${multiplier}x</span><br>
+            <span style="font-size: 18px; color: #2d3748;">حق بیمه تخمینی: ${finalPremium.toLocaleString('fa-IR')} ریال</span>
+        </div>
+    `;
+}
 window.addEventListener('DOMContentLoaded', function() {
     loadToken();
     initMap();
