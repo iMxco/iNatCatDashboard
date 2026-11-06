@@ -937,9 +937,10 @@ async function downloadPDF() {
 // راه‌اندازی اولیه
 // ============================================================
 function calculatePremium() {
-    const base = parseFloat(document.getElementById('basePremium').value) || 0;
+    const base = parseFloat(document.getElementById('baseRate').value) || 0;
     const basis = document.getElementById('rateBasis').value;
     const resultDiv = document.getElementById('premiumResult');
+    const historyList = document.getElementById('historyList');
     
     let score = currentScores[basis];
     
@@ -953,17 +954,32 @@ function calculatePremium() {
     else if (score > 3) multiplier = 1.5;
     else if (score > 2) multiplier = 1.2;
 
-    const finalPremium = base * multiplier;
+    const finalRate = base * multiplier;
     let color = multiplier >= 1.5 ? '#e53e3e' : (multiplier >= 1.2 ? '#dd6b20' : '#38a169');
-    const basisNames = { overall: 'ریسک کلی', flood: 'سیل', earthquake: 'زلزله', lightning: 'صاعقه', aviation: 'هوانوردی' };
     
+    const basisNames = { 
+        overall: 'ریسک کلی', flood: 'سیل', earthquake: 'زلزله', 
+        landslide: 'رانش زمین', subsidence: 'فرونشست زمین', 
+        lightning: 'صاعقه', storm: 'طوفان', temperature: 'دما', aviation: 'هوانوردی' 
+    };
+    
+    // ۱. نمایش نتیجه در فیلد اصلی
     resultDiv.innerHTML = `
-        <div style="padding: 15px; background: #f7fafc; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
-            <span style="color: #4a5568;">مبنای محاسبه: <strong>${basisNames[basis]}</strong> (امتیاز: ${score.toFixed(1)})</span><br>
+        <div style="padding: 15px; background: #ebf8ff; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
+            <span style="color: #4a5568;">مبنای محاسبه: <strong>${basisNames[basis]}</strong> (امتیاز ریسک: ${score.toFixed(1)})</span><br>
             <span style="color: ${color}; font-weight: bold;">ضریب تعدیل ریسک (Risk Multiplier): ${multiplier}x</span><br>
-            <span style="font-size: 18px; color: #2d3748; margin-top: 5px; display: inline-block;">نرخ نهایی (Final Rate): ${finalPremium.toLocaleString('fa-IR')} ریال</span>
+            <span style="font-size: 18px; color: #2d3748; margin-top: 5px; display: inline-block;">نرخ نهایی تعدیل‌شده: ${finalRate.toFixed(1)}</span>
         </div>
     `;
+
+    // ۲. ذخیره در تاریخچه
+    const li = document.createElement('li');
+    li.style.cssText = 'padding: 8px; border-bottom: 1px solid #e2e8f0; color: #2d3748;';
+    li.innerHTML = `<strong>${basisNames[basis]}</strong>: نرخ ${finalRate.toFixed(1)} (ضریب ${multiplier}x)`;
+    historyList.prepend(li); // اضافه کردن به بالای لیست
+
+    // ۳. صفر کردن فیلد نرخ پایه برای محاسبه بعدی
+    document.getElementById('baseRate').value = '';
 }
 window.addEventListener('DOMContentLoaded', function() {
     loadToken();
