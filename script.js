@@ -1005,7 +1005,7 @@ function drawMarkerOnImage(imageId, lat, lon) {
 
     // 🌟 تنظیم دقیق برای جبران حاشیه‌های سفید و عنوان پایین
     leftPercent = 2 + (leftPercent * 0.98);  // فشرده کردن به ۹۶٪ وسط
-    topPercent = 2 + (topPercent * 0.91);   // فشرده کردن به ۸۸٪ وسط
+    topPercent = 2 + (topPercent * 0.95);   // فشرده کردن به ۸۸٪ وسط
 
     // اگر نقطه خارج از محدوده عکس بود، دایره را نشان نده
     if (leftPercent < 0 || leftPercent > 100 || topPercent < 0 || topPercent > 100) return;
