@@ -42,7 +42,12 @@
             <input type="number" id="lon" step="0.0001" value="51.3890">
         </div>
 
-                <div class="form-group">
+        <div class="form-group" id="manualRiverGroup" style="display: none;">
+            <label>📏 فاصله از نزدیک‌ترین رودخانه (متر) — اختیاری:</label>
+            <input type="number" id="manualRiverDistance" step="10" min="0" placeholder="مثال: 250">
+        </div>
+
+        <div class="form-group">
             <label>🏢 ارتفاع سازه (متر):</label>
             <input type="number" id="buildingHeight" value="0" min="0" placeholder="مثلاً 15">
         </div>
@@ -52,13 +57,6 @@
                 📍 موقعیت من (GPS)
             </button>
         </div>
-
-        <div class="form-group" id="manualRiverGroup" style="display: none;">
-            <label>📏 فاصله از نزدیک‌ترین رودخانه (متر) — اختیاری:</label>
-            <input type="number" id="manualRiverDistance" step="10" min="0" placeholder="مثال: 250">
-        </div>
-
-        <!-- فیلد ارتفاع دستی کاملاً حذف شد تا اتوماتیک باشد -->
 
         <button id="analyzeBtn" onclick="analyzeAll()" class="btn-primary">تحلیل یکپارچه و ارزیابی بیمه‌ای</button>
 
@@ -105,23 +103,35 @@
             <div class="param-details" id="paramDetails"></div>
 
             <div class="insurance-assistant" id="insuranceAssistant" style="display:none; margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px;">
-                <h2 style="color: #2c5282;">📋 دستیار بیمه‌گر</h2>
+                <h2 style="color: #2c5282;">📋 دستیار هوشمند بیمه‌گر (Smart Insurance Assistant)</h2>
                 <p>تحلیل و پیشنهادهای بیمه‌گری بر اساس مخاطرات با امتیاز بالاتر از ۲.۵</p>
                 <div id="insuranceContent"></div>
             </div>
+
+            <!-- 🌟 محاسبه‌گر نرخ بیمه -->
+            <div id="premiumCalculator" style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px; display: none;">
+                <h2 style="color: #2c5282;">💰 محاسبه‌گر نرخ بیمه (Insurance Rate Calculator)</h2>
+                <div style="margin-bottom: 15px;">
+                    <label>مبنای محاسبه:</label>
+                    <select id="rateBasis" style="padding: 10px; margin: 5px; border: 1px solid #cbd5e0; border-radius: 5px;">
+                        <option value="overall">ریسک کلی (Overall)</option>
+                        <option value="flood">فقط سیل (Flood)</option>
+                        <option value="earthquake">فقط زلزله (Earthquake)</option>
+                        <option value="lightning">فقط صاعقه (Lightning)</option>
+                        <option value="aviation">فقط هوانوردی (Aviation)</option>
+                    </select>
+                    <br>
+                    <label>نرخ پایه (ریال):</label>
+                    <input type="number" id="basePremium" value="10000000" style="padding: 10px; margin: 5px; width: 200px; border: 1px solid #cbd5e0; border-radius: 5px;">
+                    <br>
+                    <button onclick="calculatePremium()" class="btn-primary" style="padding: 10px 20px; margin-top: 10px;">محاسبه نرخ</button>
+                </div>
+                <div id="premiumResult" style="margin-top: 15px; font-weight: bold;"></div>
+            </div>
+
         </div>
     </div>
 
-            <!-- 🌟 بخش محاسبه‌گر حق بیمه -->
-        <div class="param-details" id="premiumCalculator" style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px; display: none;">
-            <h2 style="color: #2c5282;">💰 محاسبه‌گر حق بیمه (Premium Calculator)</h2>
-            <p>حق بیمه پایه را وارد کنید تا ضریب ریسک منطقه محاسبه شود:</p>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="number" id="basePremium" value="10000000" style="padding: 10px; border: 1px solid #cbd5e0; border-radius: 5px; width: 200px;">
-                <button onclick="calculatePremium()" class="btn-primary" style="padding: 10px 20px;">محاسبه</button>
-            </div>
-            <div id="premiumResult" style="margin-top: 15px; font-weight: bold; color: #2d3748;"></div>
-        </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
