@@ -995,13 +995,14 @@ function drawMarkerOnImage(imageId, lat, lon) {
     const oldMarker = imgContainer.querySelector('.map-marker');
     if (oldMarker) oldMarker.remove();
 
-    // محدوده تقریبی عکس (بر اساس نقشه‌های ایران)
-    const minLon = 44, maxLon = 64; 
-    const minLat = 25, maxLat = 40;
+    // 🌟 مختصات دقیق محدوده عکس (کالیبره شده بر اساس تصویر EMME)
+    const minLon = 20, maxLon = 80; 
+    const minLat = 20, maxLat = 45;
 
     // محاسبه درصد مکان نقطه
+    // نکته: ما کمی اعداد را دستکاری می‌کنیم تا حاشیه‌های سفید عکس را جبران کنیم
     const leftPercent = ((lon - minLon) / (maxLon - minLon)) * 100;
-    const topPercent = ((maxLat - lat) / (maxLat - minLat)) * 100;
+    const topPercent = ((maxLat - lat) / (maxLat - minLat)) * 85; // ۸۵٪ برای جبران نوار پایین عکس
 
     // اگر نقطه خارج از محدوده عکس بود، دایره را نشان نده
     if (leftPercent < 0 || leftPercent > 100 || topPercent < 0 || topPercent > 100) return;
@@ -1021,9 +1022,8 @@ function drawMarkerOnImage(imageId, lat, lon) {
     marker.style.transform = 'translate(-50%, -50%)';
     marker.style.animation = 'pulse 1.5s infinite';
     
-    // اطمینان از اینکه دایره نسبت به عکس موقعیت می‌گیرد
     imgContainer.style.position = 'relative';
-    imgContainer.style.display = 'inline-block'; // جلوگیری از کشیدگی عکس
+    imgContainer.style.display = 'inline-block'; 
     
     imgContainer.appendChild(marker);
 }
