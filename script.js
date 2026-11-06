@@ -981,6 +981,46 @@ function calculatePremium() {
     // ۳. صفر کردن فیلد نرخ پایه برای محاسبه بعدی
     document.getElementById('baseRate').value = '';
 }
+function drawMarkerOnImage(imageId, lat, lon) {
+    const imgContainer = document.getElementById(imageId);
+    if (!imgContainer) return;
+    
+    // پاک کردن دایره قبلی
+    const oldMarker = imgContainer.querySelector('.map-marker');
+    if (oldMarker) oldMarker.remove();
+
+    // محدوده تقریبی عکس (بر اساس نقشه‌های ایران)
+    const minLon = 44, maxLon = 64; 
+    const minLat = 25, maxLat = 40;
+
+    // محاسبه درصد مکان نقطه
+    const leftPercent = ((lon - minLon) / (maxLon - minLon)) * 100;
+    const topPercent = ((maxLat - lat) / (maxLat - minLat)) * 100;
+
+    // اگر نقطه خارج از محدوده عکس بود، دایره را نشان نده
+    if (leftPercent < 0 || leftPercent > 100 || topPercent < 0 || topPercent > 100) return;
+
+    // ساخت دایره قرمز
+    const marker = document.createElement('div');
+    marker.className = 'map-marker';
+    marker.style.position = 'absolute';
+    marker.style.left = `${leftPercent}%`;
+    marker.style.top = `${topPercent}%`;
+    marker.style.width = '15px';
+    marker.style.height = '15px';
+    marker.style.backgroundColor = 'red';
+    marker.style.borderRadius = '50%';
+    marker.style.border = '3px solid white';
+    marker.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+    marker.style.transform = 'translate(-50%, -50%)';
+    marker.style.animation = 'pulse 1.5s infinite';
+    
+    // اطمینان از اینکه دایره نسبت به عکس موقعیت می‌گیرد
+    imgContainer.style.position = 'relative';
+    imgContainer.style.display = 'inline-block'; // جلوگیری از کشیدگی عکس
+    
+    imgContainer.appendChild(marker);
+}
 window.addEventListener('DOMContentLoaded', function() {
     loadToken();
     initMap();
