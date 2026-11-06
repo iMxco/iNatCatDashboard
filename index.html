@@ -108,12 +108,12 @@
                 <div id="insuranceContent"></div>
             </div>
 
-            <!-- 🌟 محاسبه‌گر نرخ بیمه -->
+                        <!-- 🌟 محاسبه‌گر نرخ بیمه -->
             <div id="premiumCalculator" style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 20px; display: none;">
                 <h2 style="color: #2c5282;">💰 محاسبه‌گر نرخ بیمه (Insurance Rate Calculator)</h2>
                 <div style="margin-bottom: 15px;">
                     <label>مبنای محاسبه:</label>
-                        <select id="rateBasis" style="padding: 10px; margin: 5px; border: 1px solid #cbd5e0; border-radius: 5px;">
+                    <select id="rateBasis" style="padding: 10px; margin: 5px; border: 1px solid #cbd5e0; border-radius: 5px;">
                         <option value="overall">ریسک کلی (Overall)</option>
                         <option value="flood">🌊 سیل (Flood)</option>
                         <option value="earthquake">🌍 زلزله (Earthquake)</option>
@@ -125,11 +125,18 @@
                         <option value="aviation">✈️ هوانوردی (Aviation)</option>
                     </select>
                     <br>
-                    <label>نرخ پایه (ریال):</label>
-                    <input type="number" id="basePremium" value="10000000" style="padding: 10px; margin: 5px; width: 200px; border: 1px solid #cbd5e0; border-radius: 5px;">
+                    <label>نرخ پایه:</label>
+                    <input type="number" id="baseRate" value="100" style="padding: 10px; margin: 5px; width: 200px; border: 1px solid #cbd5e0; border-radius: 5px;">
                     <br>
                     <button onclick="calculatePremium()" class="btn-primary" style="padding: 10px 20px; margin-top: 10px;">محاسبه نرخ</button>
                 </div>
+                
+                <!-- 🌟 بخش تاریخچه محاسبات -->
+                <div id="premiumHistory" style="margin-top: 20px; background: #f7fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <h4 style="color: #4a5568; margin-bottom: 10px;">📜 تاریخچه نرخ‌های محاسبه‌شده</h4>
+                    <ul id="historyList" style="list-style-type: none; padding: 0; margin: 0;"></ul>
+                </div>
+                
                 <div id="premiumResult" style="margin-top: 15px; font-weight: bold;"></div>
             </div>
 
