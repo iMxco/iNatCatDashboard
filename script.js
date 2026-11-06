@@ -968,14 +968,14 @@ function calculatePremium() {
         <div style="padding: 15px; background: #ebf8ff; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
             <span style="color: #4a5568;">مبنای محاسبه: <strong>${basisNames[basis]}</strong> (امتیاز ریسک: ${score.toFixed(1)})</span><br>
             <span style="color: ${color}; font-weight: bold;">ضریب تعدیل ریسک (Risk Multiplier): ${multiplier}x</span><br>
-            <span style="font-size: 18px; color: #2d3748; margin-top: 5px; display: inline-block;">نرخ نهایی تعدیل‌شده: ${finalRate.toFixed(1)}</span>
+            <span style="font-size: 18px; color: #2d3748; margin-top: 5px; display: inline-block;">نرخ نهایی تعدیل‌شده: ${finalRate.toFixed(5)}</span>
         </div>
     `;
 
     // ۲. ذخیره در تاریخچه
     const li = document.createElement('li');
     li.style.cssText = 'padding: 8px; border-bottom: 1px solid #e2e8f0; color: #2d3748;';
-    li.innerHTML = `<strong>${basisNames[basis]}</strong>: نرخ ${finalRate.toFixed(1)} (ضریب ${multiplier}x)`;
+    li.innerHTML = `<strong>${basisNames[basis]}</strong>: نرخ ${finalRate.toFixed(5)} (ضریب ${multiplier}x)`;
     historyList.prepend(li); // اضافه کردن به بالای لیست
 
     // ۳. صفر کردن فیلد نرخ پایه برای محاسبه بعدی
