@@ -3,7 +3,7 @@
 // ============================================================
 let map = null;
 let currentOverallRisk = 0;
-let currentScores = { overall: 0, flood: 0, earthquake: 0, lightning: 0, aviation: 0 };
+let currentScores = { overall: 0, flood: 0, earthquake: 0, landslide: 0, subsidence: 0, lightning: 0, storm: 0, temperature: 0, aviation: 0 };
 let marker = null;
 let radarChart = null, barChart = null, precipChart = null, windChart = null, tempChart = null;
 const WORKER_URL = 'https://nassaproxyv2.behnam-zamani.workers.dev';
@@ -584,11 +584,15 @@ async function analyzeAll() {
         const scores = [fScore, eScore, landScore, subScore, lScore, wScore, tScore, avScore];
         const overall = scores.reduce((a,b)=>a+b,0) / scores.length;
                 // 🌟 ذخیره امتیازها برای محاسبه‌گر نرخ
-        currentScores = {
+                currentScores = {
             overall: overall,
             flood: fScore,
             earthquake: eScore,
+            landslide: landScore,
+            subsidence: subScore,
             lightning: lScore,
+            storm: wScore,
+            temperature: tScore,
             aviation: avScore
         };
         
