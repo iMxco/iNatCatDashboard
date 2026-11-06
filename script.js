@@ -1004,7 +1004,7 @@ function drawMarkerOnImage(imageId, lat, lon) {
     let topPercent = ((maxLat - lat) / (maxLat - minLat)) * 100;
 
     // 🌟 تنظیم دقیق برای جبران حاشیه‌های سفید و عنوان پایین
-    leftPercent = 2 + (leftPercent * 0.91);  // فشرده کردن به ۹۶٪ وسط
+    leftPercent = 2 + (leftPercent * 0.84);  // فشرده کردن به ۹۶٪ وسط
     topPercent = 2 + (topPercent * 0.98);   // فشرده کردن به ۸۸٪ وسط
 
     // اگر نقطه خارج از محدوده عکس بود، دایره را نشان نده
