@@ -964,10 +964,10 @@ function calculatePremium() {
     };
     
     // ۱. نمایش نتیجه در فیلد اصلی
-    resultDiv.innerHTML = `
+       resultDiv.innerHTML = `
         <div style="padding: 15px; background: #ebf8ff; border-radius: 5px; border-right: 4px solid ${color}; margin-top: 10px;">
             <span style="color: #4a5568;">مبنای محاسبه: <strong>${basisNames[basis]}</strong> (امتیاز ریسک: ${score.toFixed(1)})</span><br>
-            <span style="color: ${color}; font-weight: bold;">ضریب تعدیل ریسک (Risk Multiplier): ${multiplier}x</span><br>
+            <span style="color: ${color}; font-weight: bold;">نرخ پایه (Base Rate): ${base.toFixed(5)} | ضریب تعدیل ریسک (Risk Multiplier): ${multiplier}x</span>
             <span style="font-size: 18px; color: #2d3748; margin-top: 5px; display: inline-block;">نرخ نهایی تعدیل‌شده: ${finalRate.toFixed(5)}</span>
         </div>
     `;
