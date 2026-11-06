@@ -669,10 +669,16 @@ async function analyzeAll() {
             });
             html += `</tbody></table>`;
         }
+                // 🌟 نمایش نقشه گسل‌ها با دایره نقطه انتخابی
         html += `<div style="text-align: center; margin-top: 15px;">`;
-        html += `<img src="faults-map.png" alt="نقشه گسل‌های فعال ایران" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
-        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه گسل‌های فعال ایران (منبع: پایگاه داده گسل‌های فعال)</p>`;
-        html += `</div></div>`;
+        html += `<div id="eqMapContainer" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">`;
+        html += `<img src="earthquake-map.png" alt="نقشه زلزله" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
+        html += `</div>`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه توزیع زلزله (دایره قرمز: نقطه انتخابی)</p>`;
+        html += `</div>`;
+        
+        // فراخوانی تابع برای رسم دایره
+        setTimeout(() => drawMarkerOnImage('eqMapContainer', lat, lon), 100);
 
         // بخش توپوگرافی
         html += `<div ${boxStyle}>`;
