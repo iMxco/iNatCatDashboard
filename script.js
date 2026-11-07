@@ -1013,6 +1013,7 @@ function drawMarkerOnImage(imageId, lat, lon) {
     // نگاشت به درصد کل عکس (با احتساب حاشیه‌ها)
     let leftPercent = (marginLeft + (xRatio * (1 - marginLeft - marginRight))) * 100;
     let topPercent = (marginTop + (yRatio * (1 - marginTop - marginBottom))) * 100;
+    topPercent = topPercent + 2.5; // 🌟 اضافه کردن ۲.۵ درصد به پایین برای تنظیم دقیق
 
     if (leftPercent < 0 || leftPercent > 100 || topPercent < 0 || topPercent > 100) return;
 
