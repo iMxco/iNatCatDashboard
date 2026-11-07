@@ -339,3 +339,34 @@ button {
     70% { transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
     100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
 }
+/* 🌟 تنظیمات جدید برای چیدمان دو ردیف چهارتایی کارت‌ها */
+.hazard-cards {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* ۴ ستون مساوی */
+    gap: 15px !important;
+    max-width: 1000px !important; /* عرض مناسب برای ۴ کارت */
+    margin: 0 auto 25px auto !important; /* وسط‌چین کردن */
+    padding: 10px !important;
+}
+
+/* برای موبایل و صفحات کوچک، به ۲ ستون تغییر می‌کند */
+@media (max-width: 768px) {
+    .hazard-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* استایل خود کارت‌ها */
+.hazard-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 15px !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+    transition: transform 0.2s !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
