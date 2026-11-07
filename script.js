@@ -992,23 +992,28 @@ function drawMarkerOnImage(imageId, lat, lon) {
     const imgContainer = document.getElementById(imageId);
     if (!imgContainer) return;
     
-    // پاک کردن دایره قبلی
     const oldMarker = imgContainer.querySelector('.map-marker');
     if (oldMarker) oldMarker.remove();
 
-    // 🌟 مرزهای دقیق نقشه در تصویر EMME
+    // 🌟 تنظیمات کالیبراسیون اختصاصی برای نقشه زلزله (EMME)
+    // مرزهای جغرافیایی دقیق این عکس:
     const minLon = 20, maxLon = 80; 
     const minLat = 20, maxLat = 45;
 
-    // محاسبه درصد مکان نقطه
-    let leftPercent = ((lon - minLon) / (maxLon - minLon)) * 100;
-    let topPercent = ((maxLat - lat) / (maxLat - minLat)) * 100;
+    // درصد حاشیه‌های سفید (برای جبران خطا)
+    const marginLeft = 0.03;   // ۳٪ حاشیه از چپ
+    const marginRight = 0.03;  // ۳٪ حاشیه از راست
+    const marginTop = 0.02;    // ۲٪ حاشیه از بالا
+    const marginBottom = 0.15; // ۱۵٪ حاشیه از پایین (نوار EMME)
 
-    // 🌟 تنظیم دقیق برای جبران حاشیه‌های سفید و عنوان پایین
-    leftPercent = 2 + (leftPercent * 0.84);  // فشرده کردن به ۹۶٪ وسط
-    topPercent = 2 + (topPercent * 0.98);   // فشرده کردن به ۸۸٪ وسط
+    // محاسبه درصد موقعیت نقطه در فضای خالص نقشه (بدون حاشیه)
+    let xRatio = (lon - minLon) / (maxLon - minLon);
+    let yRatio = (maxLat - lat) / (maxLat - minLat);
 
-    // اگر نقطه خارج از محدوده عکس بود، دایره را نشان نده
+    // نگاشت به درصد کل عکس (با احتساب حاشیه‌ها)
+    let leftPercent = (marginLeft + (xRatio * (1 - marginLeft - marginRight))) * 100;
+    let topPercent = (marginTop + (yRatio * (1 - marginTop - marginBottom))) * 100;
+
     if (leftPercent < 0 || leftPercent > 100 || topPercent < 0 || topPercent > 100) return;
 
     // ساخت دایره قرمز
@@ -1017,14 +1022,15 @@ function drawMarkerOnImage(imageId, lat, lon) {
     marker.style.position = 'absolute';
     marker.style.left = `${leftPercent}%`;
     marker.style.top = `${topPercent}%`;
-    marker.style.width = '12px';
-    marker.style.height = '12px';
-    marker.style.backgroundColor = 'red';
+    marker.style.width = '14px';
+    marker.style.height = '14px';
+    marker.style.backgroundColor = '#e53e3e';
     marker.style.borderRadius = '50%';
-    marker.style.border = '2px solid white';
-    marker.style.boxShadow = '0 0 10px rgba(0,0,0,0.8)';
+    marker.style.border = '2px solid #ffffff';
+    marker.style.boxShadow = '0 0 0 4px rgba(160, 174, 192, 0.6), 0 0 10px rgba(0,0,0,0.8)';
     marker.style.transform = 'translate(-50%, -50%)';
     marker.style.animation = 'pulse 1.5s infinite';
+    marker.style.zIndex = '10';
     
     imgContainer.style.position = 'relative';
     imgContainer.style.display = 'inline-block'; 
