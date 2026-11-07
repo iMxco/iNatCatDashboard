@@ -1004,7 +1004,7 @@ function drawMarkerOnImage(imageId, lat, lon) {
     const marginLeft = 0.03;   // ۳٪ حاشیه از چپ
     const marginRight = 0.03;  // ۳٪ حاشیه از راست
     const marginTop = 0.02;    // ۲٪ حاشیه از بالا
-    const marginBottom = 0.15; // ۱۵٪ حاشیه از پایین (نوار EMME)
+    const marginBottom = 0.17; // ۱۵٪ حاشیه از پایین (نوار EMME)
 
     // محاسبه درصد موقعیت نقطه در فضای خالص نقشه (بدون حاشیه)
     let xRatio = (lon - minLon) / (maxLon - minLon);
