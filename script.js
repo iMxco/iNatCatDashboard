@@ -669,13 +669,14 @@ async function analyzeAll() {
             });
             html += `</tbody></table>`;
         }
-                // 🌟 نمایش نقشه گسل‌ها با دایره نقطه انتخابی
+                // 🌟 نمایش نقشه زلزله با استفاده از Leaflet Image Overlay
         html += `<div style="text-align: center; margin-top: 15px;">`;
-        html += `<div id="eqMapContainer" style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">`;
-        html += `<img src="earthquake-map.png" alt="نقشه زلزله" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">`;
+        html += `<div id="eqMapOverlay" style="width: 100%; height: 400px; border-radius: 8px; border: 1px solid #cbd5e0;"></div>`;
+        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه توزیع زلزله (نقطه قرمز: محل انتخابی)</p>`;
         html += `</div>`;
-        html += `<p style="font-size: 12px; color: #718096; margin-top: 5px;">نقشه توزیع زلزله (دایره قرمز: نقطه انتخابی)</p>`;
-        html += `</div>`;
+        
+        // فراخوانی تابع برای رسم نقشه (با تاخیر برای اطمینان از لود شدن HTML)
+        setTimeout(() => showMapWithOverlay(lat, lon), 100);
         
         // فراخوانی تابع برای رسم دایره
         setTimeout(() => drawMarkerOnImage('eqMapContainer', lat, lon), 100);
@@ -1037,6 +1038,30 @@ function drawMarkerOnImage(imageId, lat, lon) {
     imgContainer.style.display = 'inline-block'; 
     
     imgContainer.appendChild(marker);
+}
+function showMapWithOverlay(lat, lon) {
+    // اگر نقشه قبلی وجود دارد، آن را پاک کن
+    if (window.overlayMap) {
+        window.overlayMap.remove();
+    }
+
+    // ۱. ایجاد نقشه جدید با مرکزیت ایران
+    window.overlayMap = L.map('eqMapOverlay').setView([32, 53], 5);
+
+    // ۲. اضافه کردن عکس به عنوان لایه (با مرزهای دقیق جغرافیایی)
+    // 🌟 مختصات مرزهای عکس شما: جنوب غرب (پایین چپ) و شمال شرق (بالا راست)
+    const imageBounds = [[20, 20], [45, 80]]; 
+    L.imageOverlay('earthquake-map.png', imageBounds).addTo(window.overlayMap);
+
+    // ۳. اضافه کردن مارکر (نقطه قرمز چشمک‌زن)
+    const redIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div style='background-color: red; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 4px rgba(160, 174, 192, 0.6), 0 0 10px rgba(0,0,0,0.8); animation: pulse 1.5s infinite;'></div>`,
+        iconSize: [15, 15],
+        iconAnchor: [7.5, 7.5]
+    });
+
+    L.marker([lat, lon], { icon: redIcon }).addTo(window.overlayMap);
 }
 window.addEventListener('DOMContentLoaded', function() {
     loadToken();
