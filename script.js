@@ -1045,12 +1045,13 @@ function showMapWithOverlay(lat, lon) {
         window.overlayMap.remove();
     }
 
-    // ۱. ایجاد نقشه جدید با مرکزیت ایران
-    window.overlayMap = L.map('eqMapOverlay').setView([32, 53], 5);
+    // ۱. ایجاد نقشه جدید
+    window.overlayMap = L.map('eqMapOverlay').setView([lat, lon], 5);
 
-    // ۲. اضافه کردن عکس به عنوان لایه (با مرزهای دقیق جغرافیایی)
-    // 🌟 مختصات مرزهای عکس شما: جنوب غرب (پایین چپ) و شمال شرق (بالا راست)
-    const imageBounds = [[20, 20], [45, 80]]; 
+    // ۲. اضافه کردن عکس با استفاده از مختصات دقیق استخراج شده از KML
+    // فرمت: [[South, West], [North, East]]
+    const imageBounds = [[16.9104632, 15.7817301], [47.8917733, 82.1054825]]; 
+    
     L.imageOverlay('earthquake-map.png', imageBounds).addTo(window.overlayMap);
 
     // ۳. اضافه کردن مارکر (نقطه قرمز چشمک‌زن)
@@ -1061,7 +1062,11 @@ function showMapWithOverlay(lat, lon) {
         iconAnchor: [7.5, 7.5]
     });
 
+    // اضافه کردن مارکر به مختصات دقیق
     L.marker([lat, lon], { icon: redIcon }).addTo(window.overlayMap);
+
+    // ۴. تنظیم زوم روی نقطه انتخابی (برای اینکه دایره دقیقاً وسط باشد)
+    window.overlayMap.setView([lat, lon], 6);
 }
 window.addEventListener('DOMContentLoaded', function() {
     loadToken();
